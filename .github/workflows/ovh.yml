@@ -40,13 +40,13 @@ jobs:
           COMMON="set net:max-retries 2; set net:timeout 15; set net:reconnect-interval-base 5; set cmd:fail-exit yes; debug 3;"
           MIRROR="mirror --reverse --only-newer --no-perms --verbose dist www; bye"
           echo "::group::Essai SFTP (port 22)"
-          if timeout 150 lftp --env-password -u "$USER_" -e "$COMMON set sftp:auto-confirm yes; open sftp://$HOST; $MIRROR" < /dev/null; then
+          if timeout 150 lftp -e "$COMMON set sftp:auto-confirm yes; open --env-password -u $USER_ sftp://$HOST; $MIRROR" < /dev/null; then
             echo "::endgroup::"; echo "Envoi réussi par SFTP."; exit 0
           fi
           echo "::endgroup::"
           echo "::warning::SFTP impossible, essai en FTP chiffré (FTPS)."
           echo "::group::Essai FTPS (port 21)"
-          if timeout 150 lftp --env-password -u "$USER_" -e "$COMMON set ftp:ssl-force yes; set ftp:ssl-protect-data yes; set ftp:passive-mode yes; open ftp://$HOST; $MIRROR" < /dev/null; then
+          if timeout 150 lftp -e "$COMMON set ftp:ssl-force yes; set ftp:ssl-protect-data yes; set ftp:passive-mode yes; open --env-password -u $USER_ ftp://$HOST; $MIRROR" < /dev/null; then
             echo "::endgroup::"; echo "Envoi réussi par FTPS."; exit 0
           fi
           echo "::endgroup::"

@@ -33,7 +33,7 @@ function seed() {
   const m = (id, firstName, instruments, guest = false) => ({ id, firstName, instruments, birthDate: '', photo: '', guest });
   return {
     version: 1,
-    band: { name: 'Dream On', logo: '', website: 'https://DreamOnMusic.fr', facebook: '', instagram: '', video: '' },
+    band: { name: 'Dream On', logo: '', website: 'https://dreamonmusic.com', facebook: '', instagram: '', video: '' },
     musicians: [
       m('m-valerie', 'Valérie', ['chant lead', 'chant', 'piano', 'flûte', 'tambourin']),
       m('m-alex', 'Alex', ['chant lead', 'chant', 'piano', 'guitare acoustique', 'guitare électrique', 'harmonica', 'basse']),
@@ -61,6 +61,8 @@ function normalize(d) {
 let state;
 try { state = normalize(JSON.parse(localStorage.getItem(KEY))); } catch { state = seed(); }
 if (!localStorage.getItem(KEY)) state = seed();
+// Ancienne adresse par défaut (.fr) corrigée en .com sur les appareils déjà utilisés.
+if (state.band.website === 'https://DreamOnMusic.fr') { state.band.website = 'https://dreamonmusic.com'; localStorage.setItem(KEY, JSON.stringify(state)); }
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); }
   catch (e) { alert("Enregistrement impossible : l'espace de stockage de l'appareil est plein."); }

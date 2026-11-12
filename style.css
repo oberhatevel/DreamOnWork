@@ -128,3 +128,7 @@ dialog::backdrop { background: rgba(10, 6, 20, .6); }
 .grip { flex: none; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; color: var(--muted); font-size: 1.3rem; line-height: 1; padding: .6rem .35rem; margin: -.4rem -.35rem -.4rem -.5rem; }
 .set-row.dragging { position: relative; z-index: 4; border-color: var(--accent); box-shadow: 0 8px 24px rgba(0, 0, 0, .25); }
 .set-row.dragging .grip { cursor: grabbing; }
+
+.poster { display: block; margin: 0 0 .75rem; }
+.poster img { display: block; max-width: 100%; max-height: 420px; border-radius: 12px; border: 1px solid var(--line); }
+.poster-thumb { width: 54px; height: 72px; flex: none; object-fit: cover; border-radius: 8px; }

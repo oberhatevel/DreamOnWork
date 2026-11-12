@@ -56,7 +56,7 @@ function normalize(d) {
   for (const x of Array.isArray(d.songs) ? d.songs : [])
     out.songs.push({ id: x.id || uid(), title: x.title || '', author: x.author || '', tempo: x.tempo || '', key: x.key || '', capo: x.capo || '', entryOrder: x.entryOrder || '', lead: x.lead || '', singer2: x.singer2 || '', solos: x.solos || '', remarks: x.remarks || '', parts: x.parts && typeof x.parts === 'object' ? x.parts : {}, videos: x.videos || [], scores: x.scores || [], recordings: x.recordings || [] });
   for (const x of Array.isArray(d.sets) ? d.sets : [])
-    out.sets.push({ id: x.id || uid(), name: x.name || '', date: x.date || '', type: x.type === 'live' ? 'live' : 'repetition', musicianIds: x.musicianIds || [], songIds: x.songIds || [], remarks: x.remarks || '', recordings: x.recordings || [], photos: x.photos || [] });
+    out.sets.push({ id: x.id || uid(), name: x.name || '', date: x.date || '', type: x.type === 'live' ? 'live' : 'repetition', musicianIds: x.musicianIds || [], songIds: x.songIds || [], remarks: x.remarks || '', posterId: x.posterId || '', recordings: x.recordings || [], photos: x.photos || [] });
   return out;
 }
 let state;
@@ -175,6 +175,7 @@ async function resizeImage(file, max, type = 'image/jpeg') {
   return c.toDataURL(type, 0.85);
 }
 function dropFiles(owner) {
+  if (owner.posterId) fileDel(owner.posterId).catch(() => {});
   for (const l of ['videos', 'scores', 'recordings', 'photos'])
     for (const a of owner[l] || []) if (a.fileId) fileDel(a.fileId).catch(() => {});
 }
@@ -235,7 +236,7 @@ function vSets() {
   const t = today();
   const up = state.sets.filter(s => !s.date || s.date >= t).sort((a, b) => (a.date || '9').localeCompare(b.date || '9'));
   const past = state.sets.filter(s => s.date && s.date < t).sort((a, b) => b.date.localeCompare(a.date));
-  const card = s => `<a class="card" href="#/set/${s.id}"><div class="row"><div class="grow">
+  const card = s => `<a class="card" href="#/set/${s.id}"><div class="row">${s.posterId ? `<img class="poster-thumb" data-file="${s.posterId}" alt="">` : ''}<div class="grow">
       <h3>${esc(s.name)} <span class="badge ${s.type}">${TYPES[s.type]}</span></h3>
       <div class="muted">${esc(fmtDate(s.date)) || 'Date à définir'} · ${s.songIds.length} morceau${s.songIds.length > 1 ? 'x' : ''}</div>
     </div><span class="muted">›</span></div></a>`;
@@ -270,6 +271,8 @@ function vSet(id) {
         <button class="btn" data-act="set-dup" data-id="${s.id}">Dupliquer</button>
         <button class="btn danger" data-act="set-del" data-id="${s.id}">Supprimer</button>
       </div></div>
+    ${s.posterId ? `<a class="poster" data-file="${s.posterId}" target="_blank" title="Ouvrir l'affiche"><img data-file="${s.posterId}" alt="Affiche"></a>`
+      : s.type === 'live' ? `<button class="btn small" data-act="set-edit" data-id="${s.id}" style="margin-bottom:.6rem">+ Ajouter une affiche</button>` : ''}
     <div class="chips">${s.musicianIds.map(musician).filter(Boolean).map(m => `<span class="chip">${esc(m.firstName)}</span>`).join('') || '<span class="muted">Aucun musicien</span>'}</div>
     ${s.remarks ? `<p class="pre">${esc(s.remarks)}</p>` : ''}
     <div class="sec-head"><h2>Morceaux (${songs.length})</h2><button class="btn primary small" data-act="set-pick" data-id="${s.id}">Choisir les morceaux</button></div>
@@ -395,10 +398,19 @@ const A = {
         <div class="grid2">${field('Date', 'date', s?.date ?? '', 'type="date"')}
         <label class="f">Type<select name="type">${Object.entries(TYPES).map(([k, v]) => `<option value="${k}" ${s?.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label></div>
         <fieldset><legend>Musiciens</legend><div class="checks">${state.musicians.map(m => `<label><input type="checkbox" name="mus" value="${m.id}" ${sel.includes(m.id) ? 'checked' : ''}>${esc(m.firstName)}${m.guest ? ' (invité)' : ''}</label>`).join('')}</div></fieldset>
-        ${area('Remarques', 'remarks', s?.remarks)}`,
-      onSubmit(fd) {
-        const t = s || { id: uid(), songIds: [], recordings: [], photos: [] };
+        ${area('Remarques', 'remarks', s?.remarks)}
+        ${field('Affiche du concert (image)', 'poster', '', 'type="file" accept="image/*"')}
+        ${s?.posterId ? `<label class="check"><input type="checkbox" name="noPoster"> Supprimer l'affiche actuelle</label>` : ''}`,
+      async onSubmit(fd) {
+        const t = s || { id: uid(), songIds: [], recordings: [], photos: [], posterId: '' };
         Object.assign(t, { name: fd.get('name').trim(), date: fd.get('date'), type: fd.get('type'), musicianIds: fd.getAll('mus'), remarks: fd.get('remarks').trim() });
+        const img = fd.get('poster');
+        if ((fd.has('noPoster') || img?.size) && t.posterId) { await fileDel(t.posterId); urlCache.delete(t.posterId); t.posterId = ''; }
+        if (img?.size) {
+          const blob = await (await fetch(await resizeImage(img, 1600))).blob();
+          t.posterId = uid();
+          await filePut(t.posterId, blob);
+        }
         if (!s) { state.sets.push(t); location.hash = '#/set/' + t.id; }
       },
     });
@@ -412,7 +424,7 @@ const A = {
   },
   'set-dup'(el) {
     const s = state.sets.find(x => x.id === el.dataset.id);
-    const c = { ...s, id: uid(), name: s.name + ' (copie)', date: '', songIds: [...s.songIds], musicianIds: [...s.musicianIds], recordings: [], photos: [] };
+    const c = { ...s, id: uid(), name: s.name + ' (copie)', date: '', songIds: [...s.songIds], musicianIds: [...s.musicianIds], posterId: '', recordings: [], photos: [] };
     state.sets.push(c); save(); location.hash = '#/set/' + c.id;
   },
   'set-move'(el) {

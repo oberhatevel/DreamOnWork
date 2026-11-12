@@ -70,19 +70,34 @@ function save() {
 }
 // Répertoire de départ : ajouté une seule fois aux appareils déjà utilisés (sans doublon de titre).
 function addSeedData() {
-  if (state.seedVersion >= SEED_VERSION) return;
+  const old = state.seedVersion || 0;
+  if (old >= SEED_VERSION) return;
   const fresh = normalize({ musicians: [], songs: SEED_SONGS, sets: SEED_SETS });
+  const patches = SEED_PATCHES.filter(p => p.v > old);
+  const find = (id, title) => state.songs.find(y => y.id === id) || state.songs.find(y => norm(y.title) === norm(title));
   const idMap = {};
+  // Morceaux : tous sur un appareil jamais initialisé, sinon seulement ceux apparus depuis sa version.
   for (const x of fresh.songs) {
-    const same = state.songs.find(y => y.id === x.id || norm(y.title) === norm(x.title));
-    if (same) idMap[x.id] = same.id; else state.songs.push(x);
+    const same = find(x.id, x.title);
+    if (same) idMap[x.id] = same.id;
+    else if (!old || patches.some(p => p.id === x.id)) state.songs.push(x);
   }
-  for (const t of fresh.sets) {
-    if (state.sets.some(y => y.id === t.id)) continue;
-    t.songIds = t.songIds.map(id => idMap[id] || id);
+  // Corrections des morceaux déjà présents (chanteur lead, instruments, titre).
+  if (old) for (const p of patches) {
+    const t = find(p.id, p.oldTitle || p.title || '');
+    if (!t) continue;
+    t.lead = musician(p.lead) ? p.lead : t.lead;
+    t.singer2 = musician(p.singer2) ? p.singer2 : t.singer2;
+    for (const [mid, part] of Object.entries(p.parts)) if (musician(mid)) t.parts[mid] = structuredClone(part);
+    if (p.title && t.title === p.oldTitle) t.title = p.title;
+  }
+  SEED_SETS.forEach((raw, i) => {
+    const t = fresh.sets[i];
+    if ((raw.since || 1) <= old || state.sets.some(y => y.id === t.id)) return;
+    t.songIds = t.songIds.map(id => idMap[id] || id).filter(song);
     t.musicianIds = t.musicianIds.filter(musician);
     state.sets.push(t);
-  }
+  });
   state.seedVersion = SEED_VERSION;
   save();
 }

@@ -1,6 +1,7 @@
 'use strict';
-// Répertoire de départ (issu du set « St Lumine motards », oct. 2026). Version à incrémenter si la liste change.
-const SEED_VERSION = 1;
+// Répertoire de départ (fiche Keynote de Yann, set list « Les Smaart 24-10-2026 »).
+// SEED_VERSION est à incrémenter à chaque évolution ; SEED_PATCHES corrige les appareils déjà utilisés.
+const SEED_VERSION = 2;
 const SEED_SONGS = [
  {
   "id": "s-keep-on-walking",
@@ -29,7 +30,8 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "guitare électrique"
     ],
     "note": ""
    },
@@ -74,7 +76,8 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "guitare électrique"
     ],
     "note": ""
    },
@@ -119,7 +122,8 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "guitare électrique"
     ],
     "note": ""
    },
@@ -145,8 +149,8 @@ const SEED_SONGS = [
   "key": "",
   "capo": "2",
   "entryOrder": "Intro guitare Alex",
-  "lead": "m-valerie",
-  "singer2": "m-alex",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
   "solos": "",
   "remarks": "Intro guitare Alex\n\nCouplet (x3)\n\nA         A           -    E     D\nA         E           D          A\nF#m    (E 2e)    D          A\nBm     D           F#m\n\nRefrain (x2)\n\nD      A       D       A\nBm    D     A\n\nFin guitare Alex\n\nD      A",
   "parts": {
@@ -164,13 +168,14 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant lead",
+     "guitare électrique"
     ],
     "note": ""
    },
    "m-valerie": {
     "instruments": [
-     "chant lead"
+     "chant"
     ],
     "note": ""
    },
@@ -190,8 +195,8 @@ const SEED_SONGS = [
   "key": "",
   "capo": "3",
   "entryOrder": "",
-  "lead": "m-valerie",
-  "singer2": "m-alex",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
   "solos": "",
   "remarks": "intro\nEm             I     D    Em       (x2)\n\nHarmo\n\nEm          C  I   D           G    I  Em        C         I D                G\nEm          C  I   D           G    I  Em                    I D   Em\n\nEm          C      D           G      Em             C                    D                   G\nI wanna live    I wanna give   I've been a miner for a     heart of gold\n\nEm          C                      D           G     Em                                          G\nIt's these expressions    I never give   That keep me searching for a  heart of gold\n\nC                                C   Bm   Am   G    Em                                       G\nAnd I'm getting old                                 Keeps me searching for a   heart of gold\n\nC                                C   Bm   Am   G\nAnd I'm getting old\n\nHarmo\n\nI've been to Hollywood, I've been to Redwood\nI've crossed the ocean for a heart of gold\n\nI've been in my mind, it's such a fine line\nThat keeps me searching for a heart of gold\n\nAnd I'm getting old\nKeeps me searching for a heart of gold\nAnd I'm getting old\n\nHarmo\n\nEm                                        D           Em\nKeep me searching for a      heart of gold\n\nEm                                         D           Em\nKeep me searching and I'm  growing old\n\nEm                                        D           Em\nKeep me searching for a      heart of gold\n\nEm                                G                    C\nI've been a miner for a  heart of gold",
   "parts": {
@@ -209,13 +214,15 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant lead",
+     "guitare acoustique",
+     "harmonica"
     ],
-    "note": ""
+    "note": "Folk + Harmo Bb"
    },
    "m-valerie": {
     "instruments": [
-     "chant lead"
+     "chant"
     ],
     "note": ""
    },
@@ -235,8 +242,8 @@ const SEED_SONGS = [
   "key": "",
   "capo": "",
   "entryOrder": "",
-  "lead": "m-valerie",
-  "singer2": "m-alex",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
   "solos": "",
   "remarks": "Bm            -            F#\nBm            -            -            \nF#             -\n\nBm            F#          -\nBm            -             E\nF#             Bm",
   "parts": {
@@ -254,13 +261,14 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant lead",
+     "guitare électrique"
     ],
     "note": ""
    },
    "m-valerie": {
     "instruments": [
-     "chant lead"
+     "chant"
     ],
     "note": ""
    },
@@ -299,9 +307,11 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "guitare électrique",
+     "harmonica"
     ],
-    "note": ""
+    "note": "Harmo D"
    },
    "m-valerie": {
     "instruments": [
@@ -319,14 +329,14 @@ const SEED_SONGS = [
  },
  {
   "id": "s-drowin",
-  "title": "Drowin’",
+  "title": "Drownin’",
   "author": "Alexandre Fournier (composition)",
   "tempo": "",
   "key": "",
   "capo": "2",
   "entryOrder": "Intro guitare Alex + Break",
-  "lead": "m-valerie",
-  "singer2": "m-alex",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
   "solos": "Solo guitare Alex sur couplet",
   "remarks": "Intro guitare Alex + Break\n\nx2\n\nAm        Dm         Am\n\nCouplet (x2)\n\n+ Solo guitare Alex sur couplet\n\nAm        Dm         Am     \nAm         C\nF   /  C         G   /  Am \nC            G   /   C\n\nRefrain (x3)\n\nx4\n\nAm     E7     Am    \n\nC        G        C\n\nx2\n\nF   /  C         G   /  Am \n\nAm            G   /   C\n\n1 & 3\n\nAm            E\n\n2 & 4",
   "parts": {
@@ -344,13 +354,14 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant lead",
+     "guitare électrique"
     ],
     "note": ""
    },
    "m-valerie": {
     "instruments": [
-     "chant lead"
+     "chant"
     ],
     "note": ""
    },
@@ -383,13 +394,14 @@ const SEED_SONGS = [
    },
    "m-sylvain": {
     "instruments": [
-     "basse"
+     "guitare"
     ],
-    "note": ""
+    "note": "Elec"
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "basse"
     ],
     "note": ""
    },
@@ -428,13 +440,14 @@ const SEED_SONGS = [
    },
    "m-sylvain": {
     "instruments": [
-     "basse"
+     "guitare"
     ],
-    "note": ""
+    "note": "Elec"
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "basse"
     ],
     "note": ""
    },
@@ -460,8 +473,8 @@ const SEED_SONGS = [
   "key": "",
   "capo": "2",
   "entryOrder": "",
-  "lead": "m-valerie",
-  "singer2": "m-alex",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
   "solos": "",
   "remarks": "Lam Fa Do Sol\n\nLam Fa Do Mi",
   "parts": {
@@ -479,13 +492,14 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant lead",
+     "guitare électrique"
     ],
     "note": ""
    },
    "m-valerie": {
     "instruments": [
-     "chant lead"
+     "chant"
     ],
     "note": ""
    },
@@ -1615,11 +1629,93 @@ const SEED_SONGS = [
     "note": "Elec 0 impro 12 et 15"
    }
   }
+ },
+ {
+  "id": "s-mary-jane-s-last-dance",
+  "title": "Mary Jane’s last dance",
+  "author": "",
+  "tempo": "",
+  "key": "",
+  "capo": "",
+  "entryOrder": "",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
+  "solos": "",
+  "remarks": "",
+  "parts": {
+   "m-francis": {
+    "instruments": [
+     "batterie"
+    ],
+    "note": ""
+   },
+   "m-alex": {
+    "instruments": [
+     "chant lead",
+     "piano",
+     "harmonica"
+    ],
+    "note": "Harmo Bb"
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "id": "s-proud-mary",
+  "title": "Proud Mary",
+  "author": "",
+  "tempo": "",
+  "key": "",
+  "capo": "",
+  "entryOrder": "",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "solos": "",
+  "remarks": "",
+  "parts": {
+   "m-francis": {
+    "instruments": [
+     "batterie"
+    ],
+    "note": ""
+   },
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   }
+  }
  }
 ];
 const SEED_SETS = [
  {
   "id": "set-st-lumine-motards-2026-10",
+  "since": 1,
   "name": "St Lumine motards (oct. 2026)",
   "date": "",
   "type": "live",
@@ -1668,5 +1764,405 @@ const SEED_SETS = [
    "s-what-we-need"
   ],
   "remarks": "Pause après « Sunrise » : préparer Piano G – Elec II."
+ },
+ {
+  "id": "set-les-smaart-2026-10-24",
+  "since": 2,
+  "name": "Les Smaart",
+  "date": "2026-10-24",
+  "type": "live",
+  "musicianIds": [
+   "m-valerie",
+   "m-alex",
+   "m-sylvain",
+   "m-francis",
+   "m-yann"
+  ],
+  "songIds": [
+   "s-mary-jane-s-last-dance",
+   "s-proud-mary",
+   "s-keep-on-walking",
+   "s-singin-the-blues",
+   "s-my-kinda-lover",
+   "s-take-it-easy",
+   "s-heart-of-gold",
+   "s-man-gave-names-to-all-the-animals",
+   "s-me-and-bobby-mcgee",
+   "s-drowin",
+   "s-venus",
+   "s-sweet-home-alabama",
+   "s-the-passenger"
+  ],
+  "remarks": "Bis : The Passenger."
+ }
+];
+const SEED_PATCHES = [
+ {
+  "v": 2,
+  "id": "s-mary-jane-s-last-dance",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant lead",
+     "piano",
+     "harmonica"
+    ],
+    "note": "Harmo Bb"
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 2,
+  "id": "s-proud-mary",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 2,
+  "id": "s-keep-on-walking",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 2,
+  "id": "s-singin-the-blues",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   },
+   "m-yann": {
+    "instruments": [
+     "piano"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 2,
+  "id": "s-my-kinda-lover",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 2,
+  "id": "s-take-it-easy",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant lead",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 2,
+  "id": "s-heart-of-gold",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant lead",
+     "guitare acoustique",
+     "harmonica"
+    ],
+    "note": "Folk + Harmo Bb"
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 2,
+  "id": "s-man-gave-names-to-all-the-animals",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant lead",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 2,
+  "id": "s-me-and-bobby-mcgee",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique",
+     "harmonica"
+    ],
+    "note": "Harmo D"
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   },
+   "m-yann": {
+    "instruments": [
+     "piano"
+    ],
+    "note": "Piano + orgue"
+   }
+  }
+ },
+ {
+  "v": 2,
+  "id": "s-drowin",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant lead",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   }
+  },
+  "title": "Drownin’",
+  "oldTitle": "Drowin’"
+ },
+ {
+  "v": 2,
+  "id": "s-venus",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "basse"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "guitare"
+    ],
+    "note": "Elec"
+   }
+  }
+ },
+ {
+  "v": 2,
+  "id": "s-sweet-home-alabama",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "basse"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "guitare"
+    ],
+    "note": "Elec"
+   }
+  }
+ },
+ {
+  "v": 2,
+  "id": "s-the-passenger",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant lead",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant"
+    ],
+    "note": ""
+   },
+   "m-sylvain": {
+    "instruments": [
+     "basse"
+    ],
+    "note": ""
+   }
+  }
  }
 ];

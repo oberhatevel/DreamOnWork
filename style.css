@@ -132,3 +132,5 @@ dialog::backdrop { background: rgba(10, 6, 20, .6); }
 .poster { display: block; margin: 0 0 .75rem; }
 .poster img { display: block; max-width: 100%; max-height: 420px; border-radius: 12px; border: 1px solid var(--line); }
 .poster-thumb { width: 54px; height: 72px; flex: none; object-fit: cover; border-radius: 8px; }
+
+#song-list.filtering .grip, #song-list.filtering .reorder { display: none; }

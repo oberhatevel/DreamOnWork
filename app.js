@@ -230,7 +230,7 @@ function render() {
   view.innerHTML = (pages[page] || vSets)(id);
   hydrateFiles(view);
   const q = $('#song-search');
-  if (q) q.addEventListener('input', () => filterList(q.value, '#song-list > *'));
+  if (q) q.addEventListener('input', () => { filterList(q.value, '#song-list > *'); $('#song-list').classList.toggle('filtering', !!q.value.trim()); });
 }
 function filterList(q, sel, root = document) {
   q = norm(q);
@@ -290,15 +290,21 @@ function vSet(id) {
 
 // --- Morceaux
 function vSongs() {
-  const list = [...state.songs].sort((a, b) => a.title.localeCompare(b.title, 'fr'));
-  return `<div class="head"><h1>Morceaux</h1><button class="btn primary" data-act="song-edit">+ Nouveau morceau</button></div>
+  const list = state.songs, last = list.length - 1;
+  return `<div class="head"><h1>Morceaux (${list.length})</h1><button class="btn primary" data-act="song-edit">+ Nouveau morceau</button></div>
     ${list.length ? `<input id="song-search" type="search" placeholder="Rechercher un morceau, un auteur…" style="margin-bottom:.75rem">` : `<div class="empty">Aucun morceau. Ajoutez le répertoire du groupe ici, ou importez un fichier CSV depuis l'onglet Données.</div>`}
-    <div id="song-list">${list.map(x => `<a class="card" href="#/song/${x.id}"><div class="row"><div class="grow">
-      <h3>${esc(x.title)}</h3>
-      <div class="muted">${[x.author, keyLabel(x), x.tempo && x.tempo + ' bpm'].filter(Boolean).map(esc).join(' · ') || 'À compléter'}</div>
-      ${lineup(x)}
-      ${me && part(x, me).note ? `<div class="mine">${esc(mName(me))} : ${esc(part(x, me).note)}</div>` : ''}
-    </div><span class="muted">›</span></div></a>`).join('')}</div>`;
+    <div id="song-list">${list.map((x, i) => `<div class="card set-row" data-song="${x.id}"><div class="row">
+      <span class="grip" title="Glisser pour déplacer">⠿</span>
+      <span class="num">${i + 1}</span>
+      <a class="grow" href="#/song/${x.id}" style="text-decoration:none;color:inherit">
+        <h3>${esc(x.title)}</h3>
+        <div class="muted">${[x.author, keyLabel(x), x.tempo && x.tempo + ' bpm'].filter(Boolean).map(esc).join(' · ') || 'À compléter'}</div>
+        ${lineup(x)}
+        ${me && part(x, me).note ? `<div class="mine">${esc(mName(me))} : ${esc(part(x, me).note)}</div>` : ''}
+      </a>
+      <button class="icon reorder" title="Monter" data-act="song-move" data-i="${i}" data-d="-1" ${i ? '' : 'disabled'}>▲</button>
+      <button class="icon reorder" title="Descendre" data-act="song-move" data-i="${i}" data-d="1" ${i < last ? '' : 'disabled'}>▼</button>
+    </div></div>`).join('')}</div>`;
 }
 function vSong(idq) {
   const [id, query] = String(idq || '').split('?');
@@ -440,6 +446,11 @@ const A = {
   'set-move'(el) {
     const s = state.sets.find(x => x.id === el.dataset.id), i = +el.dataset.i, j = i + +el.dataset.d;
     [s.songIds[i], s.songIds[j]] = [s.songIds[j], s.songIds[i]];
+    save(); render();
+  },
+  'song-move'(el) {
+    const i = +el.dataset.i, j = i + +el.dataset.d;
+    [state.songs[i], state.songs[j]] = [state.songs[j], state.songs[i]];
     save(); render();
   },
   'set-remove'(el) {
@@ -623,7 +634,7 @@ document.addEventListener('click', e => {
   e.preventDefault();
   Promise.resolve(A[el.dataset.act]?.(el)).catch(err => alert('Erreur : ' + err.message));
 });
-// Réordonner les morceaux d'un set en glissant la poignée (souris, doigt ou stylet).
+// Réordonner les morceaux (d'un set ou du répertoire) en glissant la poignée (souris, doigt ou stylet).
 view.addEventListener('pointerdown', e => {
   const grip = e.target.closest('.grip');
   if (!grip) return;
@@ -647,7 +658,9 @@ view.addEventListener('pointerdown', e => {
     grip.removeEventListener('pointercancel', end);
     const set = state.sets.find(x => x.id === list.dataset.id);
     const order = $$('.set-row', list).map(r => r.dataset.song);
-    if (set && order.length === set.songIds.length) { set.songIds = order; save(); }
+    if (list.id === 'song-list') {          // ordre du répertoire
+      if (order.length === state.songs.length) { state.songs = order.map(song); save(); }
+    } else if (set && order.length === set.songIds.length) { set.songIds = order; save(); }
     render();
   };
   grip.addEventListener('pointermove', move);

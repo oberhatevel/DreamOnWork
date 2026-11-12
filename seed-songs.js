@@ -1,7 +1,7 @@
 'use strict';
 // Répertoire de départ (fiche Keynote de Yann, set lists « Les Smaart » et « Le Muutch »).
 // SEED_VERSION est à incrémenter à chaque évolution ; SEED_PATCHES corrige les appareils déjà utilisés.
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 const SEED_SONGS = [
  {
   "id": "s-keep-on-walking",
@@ -546,12 +546,6 @@ const SEED_SONGS = [
    "m-valerie": {
     "instruments": [
      "chant lead"
-    ],
-    "note": ""
-   },
-   "m-yann": {
-    "instruments": [
-     "piano"
     ],
     "note": ""
    }
@@ -1840,9 +1834,11 @@ const SEED_SETS = [
    "s-sweet-home-alabama",
    "s-proud-mary"
   ],
-  "remarks": "Pause après « Don’t know why ». Bis : Proud Mary.\nChuck E’s in love : sans Yann.",
+  "remarks": "Pause après « Don’t know why ». Bis : Proud Mary.",
   "posterUrl": "posters/le-muutch-2026-10-09.jpg",
-  "posterSince": 3
+  "posterSince": 3,
+  "remarksOld": "Pause après « Don’t know why ». Bis : Proud Mary.\nChuck E’s in love : sans Yann.",
+  "remarksSince": 4
  }
 ];
 const SEED_PATCHES = [
@@ -2381,6 +2377,13 @@ const SEED_PATCHES = [
     ],
     "note": ""
    }
+  }
+ },
+ {
+  "v": 4,
+  "id": "s-chuck-es-in-love",
+  "parts": {
+   "m-yann": null
   }
  }
 ];

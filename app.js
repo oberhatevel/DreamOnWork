@@ -86,14 +86,18 @@ function addSeedData() {
   if (old) for (const p of patches) {
     const t = find(p.id, p.oldTitle || p.title || '');
     if (!t) continue;
-    t.lead = musician(p.lead) ? p.lead : t.lead;
-    t.singer2 = musician(p.singer2) ? p.singer2 : t.singer2;
-    for (const [mid, part] of Object.entries(p.parts)) if (musician(mid)) t.parts[mid] = structuredClone(part);
+    if (musician(p.lead)) t.lead = p.lead;
+    if (musician(p.singer2)) t.singer2 = p.singer2;
+    for (const [mid, part] of Object.entries(p.parts || {})) {
+      if (!part) delete t.parts[mid];                      // null : le musicien ne joue pas sur ce morceau
+      else if (musician(mid)) t.parts[mid] = structuredClone(part);
+    }
     if (p.title && t.title === p.oldTitle) t.title = p.title;
   }
   SEED_SETS.forEach((raw, i) => {
     const t = fresh.sets[i];
     const have = state.sets.find(y => y.id === t.id);
+    if (have && (raw.remarksSince || 0) > old && have.remarks === raw.remarksOld) have.remarks = raw.remarks;
     if (have && raw.posterUrl && (raw.posterSince || 1) > old && !have.posterId && !have.posterUrl) have.posterUrl = raw.posterUrl;
     if ((raw.since || 1) <= old || state.sets.some(y => y.id === t.id)) return;
     t.songIds = t.songIds.map(id => idMap[id] || id).filter(song);

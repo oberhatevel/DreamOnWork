@@ -96,9 +96,16 @@ const part = (s, mid) => s.parts[mid] || { instruments: [], note: '' };
 // Pictogramme placé devant chaque instrument.
 const ICONS = [[/chant|voix|ch(o|œ)ur/, '🎤'], [/piano|clavier|orgue|synth/, '🎹'], [/batterie|drum/, '🥁'], [/sax/, '🎷'], [/trompette|trombone|cuivre/, '🎺'],
   [/violon|alto|contrebasse/, '🎻'], [/accord[ée]on/, '🪗'], [/banjo/, '🪕'], [/tambourin|percu|cajon|conga|djemb/, '🪘'], [/guitare|basse|ukul/, '🎸'], [/fl[uû]te|harmonica/, '🎶']];
-const withIcon = n => ((ICONS.find(([re]) => re.test(norm(n))) || [0, '🎵'])[1]) + '\u00a0' + n;
+const iconOf = n => (ICONS.find(([re]) => re.test(norm(n))) || [0, '🎵'])[1];
+const withIcon = n => iconOf(n) + '\u00a0' + n;
 const instText = list => list.map(withIcon).join(', ');
 const partLabel = (s, mid) => { const p = part(s, mid); return [instText(p.instruments), p.note].filter(Boolean).join(' — '); };
+// Ligne « qui joue quoi » : pictogrammes des instruments suivis du prénom, pour chaque musicien du morceau.
+const lineup = s => {
+  const icons = m => [...new Set([...(s.lead === m.id || s.singer2 === m.id ? ['🎤'] : []), ...part(s, m.id).instruments.map(iconOf)])].join('');
+  const l = state.musicians.filter(icons).map(m => `<span class="who${m.id === me ? ' me' : ''}">${icons(m)}\u00a0${esc(m.firstName)}</span>`).join(' ');
+  return l ? `<div class="lineup">${l}</div>` : '';
+};
 const voices = s => [s.lead && mName(s.lead), s.singer2 && mName(s.singer2)].filter(Boolean).join(' / ');
 addSeedData();
 
@@ -230,8 +237,9 @@ function vSet(id) {
       <span class="num">${i + 1}</span>
       <a class="grow" href="#/song/${x.id}?set=${s.id}" style="text-decoration:none;color:inherit">
         <h3>${esc(x.title)}</h3>
-        <div class="muted">${[x.author, keyLabel(x), x.tempo && x.tempo + ' bpm', voices(x) && '🎤 ' + voices(x)].filter(Boolean).map(esc).join(' · ')}</div>
-        ${me && partLabel(x, me) ? `<div class="mine">${esc(mName(me))} : ${esc(partLabel(x, me))}</div>` : ''}
+        <div class="muted">${[x.author, keyLabel(x), x.tempo && x.tempo + ' bpm'].filter(Boolean).map(esc).join(' · ')}</div>
+        ${lineup(x)}
+        ${me && part(x, me).note ? `<div class="mine">${esc(mName(me))} : ${esc(part(x, me).note)}</div>` : ''}
       </a>
       <button class="icon" title="Monter" data-act="set-move" data-id="${s.id}" data-i="${i}" data-d="-1" ${i ? '' : 'disabled'}>▲</button>
       <button class="icon" title="Descendre" data-act="set-move" data-id="${s.id}" data-i="${i}" data-d="1" ${i < songs.length - 1 ? '' : 'disabled'}>▼</button>
@@ -261,8 +269,9 @@ function vSongs() {
     ${list.length ? `<input id="song-search" type="search" placeholder="Rechercher un morceau, un auteur…" style="margin-bottom:.75rem">` : `<div class="empty">Aucun morceau. Ajoutez le répertoire du groupe ici, ou importez un fichier CSV depuis l'onglet Données.</div>`}
     <div id="song-list">${list.map(x => `<a class="card" href="#/song/${x.id}"><div class="row"><div class="grow">
       <h3>${esc(x.title)}</h3>
-      <div class="muted">${[x.author, keyLabel(x), x.tempo && x.tempo + ' bpm', voices(x) && '🎤 ' + voices(x)].filter(Boolean).map(esc).join(' · ') || 'À compléter'}</div>
-      ${me && partLabel(x, me) ? `<div class="mine">${esc(mName(me))} : ${esc(partLabel(x, me))}</div>` : ''}
+      <div class="muted">${[x.author, keyLabel(x), x.tempo && x.tempo + ' bpm'].filter(Boolean).map(esc).join(' · ') || 'À compléter'}</div>
+      ${lineup(x)}
+      ${me && part(x, me).note ? `<div class="mine">${esc(mName(me))} : ${esc(part(x, me).note)}</div>` : ''}
     </div><span class="muted">›</span></div></a>`).join('')}</div>`;
 }
 function vSong(idq) {

@@ -33,7 +33,7 @@ function seed() {
   const m = (id, firstName, instruments, guest = false) => ({ id, firstName, instruments, birthDate: '', photo: '', guest });
   return {
     version: 1,
-    band: { name: 'Dream On', logo: '', website: 'https://dreamonmusic.com', facebook: '', instagram: '', video: '' },
+    band: { name: 'Dream On', logo: '', background: '', website: 'https://dreamonmusic.com', facebook: '', instagram: '', video: '' },
     musicians: [
       m('m-valerie', 'Valérie', ['chant lead', 'chant', 'piano', 'flûte', 'tambourin']),
       m('m-alex', 'Alex', ['chant lead', 'chant', 'piano', 'guitare acoustique', 'guitare électrique', 'harmonica', 'basse']),
@@ -93,7 +93,12 @@ const mName = id => musician(id)?.firstName || '';
 const song = id => state.songs.find(s => s.id === id);
 const keyLabel = s => s.key ? s.key + (s.capo ? ` (capo ${s.capo})` : '') : (s.capo ? `(capo ${s.capo})` : '');
 const part = (s, mid) => s.parts[mid] || { instruments: [], note: '' };
-const partLabel = (s, mid) => { const p = part(s, mid); return [p.instruments.join(', '), p.note].filter(Boolean).join(' — '); };
+// Pictogramme placé devant chaque instrument.
+const ICONS = [[/chant|voix|ch(o|œ)ur/, '🎤'], [/piano|clavier|orgue|synth/, '🎹'], [/batterie|drum/, '🥁'], [/sax/, '🎷'], [/trompette|trombone|cuivre/, '🎺'],
+  [/violon|alto|contrebasse/, '🎻'], [/accord[ée]on/, '🪗'], [/banjo/, '🪕'], [/tambourin|percu|cajon|conga|djemb/, '🪘'], [/guitare|basse|ukul/, '🎸'], [/fl[uû]te|harmonica/, '🎶']];
+const withIcon = n => ((ICONS.find(([re]) => re.test(norm(n))) || [0, '🎵'])[1]) + '\u00a0' + n;
+const instText = list => list.map(withIcon).join(', ');
+const partLabel = (s, mid) => { const p = part(s, mid); return [instText(p.instruments), p.note].filter(Boolean).join(' — '); };
 const voices = s => [s.lead && mName(s.lead), s.singer2 && mName(s.singer2)].filter(Boolean).join(' / ');
 addSeedData();
 
@@ -187,6 +192,7 @@ function render() {
   const { page, id } = route();
   $('#brand-name').textContent = state.band.name || 'Mon groupe';
   $('#brand-logo').src = state.band.logo || 'icon.svg';
+  $('.top').style.backgroundImage = state.band.background ? `linear-gradient(rgba(20,14,40,.72), rgba(20,14,40,.72)), url("${state.band.background}")` : '';
   document.title = (state.band.name || 'Groupe') + ' — Work';
   $('#me-select').innerHTML = `<option value="">—</option>` + state.musicians.map(m => `<option value="${m.id}" ${m.id === me ? 'selected' : ''}>${esc(m.firstName)}</option>`).join('');
   const tab = { sets: 'set', songs: 'song' }[page] || page;
@@ -274,7 +280,7 @@ function vSong(idq) {
       <button class="btn danger" data-act="song-del" data-id="${x.id}">Supprimer</button></div></div>
     <div class="card">${info.length ? `<dl class="info">${info.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>` : '<span class="muted">Fiche à compléter : tempo, tonalité, chanteurs…</span>'}</div>
     <h2>Instruments</h2>
-    <div class="card">${parts.length ? `<div class="tablewrap"><table><tr><th>Musicien</th><th>Instruments</th><th>Note</th></tr>${parts.map(m => `<tr ${m.id === me ? 'class="mine"' : ''}><td>${esc(m.firstName)}</td><td>${esc(part(x, m.id).instruments.join(', '))}</td><td class="pre">${esc(part(x, m.id).note)}</td></tr>`).join('')}</table></div>` : '<span class="muted">Aucun instrument défini — cliquez sur Modifier.</span>'}</div>
+    <div class="card">${parts.length ? `<div class="tablewrap"><table><tr><th>Musicien</th><th>Instruments</th><th>Note</th></tr>${parts.map(m => `<tr ${m.id === me ? 'class="mine"' : ''}><td>${esc(m.firstName)}</td><td>${esc(instText(part(x, m.id).instruments))}</td><td class="pre">${esc(part(x, m.id).note)}</td></tr>`).join('')}</table></div>` : '<span class="muted">Aucun instrument défini — cliquez sur Modifier.</span>'}</div>
     ${x.remarks ? `<h2>Remarques</h2><div class="card pre">${esc(x.remarks)}</div>` : ''}
     ${attSection('Liens vidéo', 'song:' + x.id, 'videos', 'video/*')}
     ${attSection('Partitions', 'song:' + x.id, 'scores', '.pdf,image/*,.txt,.gp,.gp5,.gpx,.musicxml,.mxl')}
@@ -288,7 +294,7 @@ function vMusicians() {
     ${state.musicians.map(m => `<div class="card"><div class="row">
       ${m.photo ? `<img class="avatar" src="${esc(m.photo)}" alt="">` : `<span class="avatar">${esc(m.firstName.slice(0, 1).toUpperCase())}</span>`}
       <div class="grow"><h3>${esc(m.firstName)} ${m.guest ? '<span class="badge">Invité</span>' : ''}</h3>
-        <div class="muted">${esc(m.instruments.join(', ')) || 'Aucun instrument'}</div>
+        <div class="muted">${esc(instText(m.instruments)) || 'Aucun instrument'}</div>
         ${m.birthDate ? `<div class="muted">🎂 ${esc(fmtDate(m.birthDate, true))}</div>` : ''}</div>
       <button class="icon" title="Modifier" data-act="mus-edit" data-id="${m.id}">✎</button>
       <button class="icon" title="Supprimer" data-act="mus-del" data-id="${m.id}">🗑</button>
@@ -300,11 +306,12 @@ function vMusicians() {
 function vBand() {
   const b = state.band;
   const rows = [['Site internet', b.website], ['Facebook', b.facebook], ['Instagram', b.instagram], ['Vidéo de présentation', b.video]];
-  return `<div class="head"><h1>${esc(b.name)}</h1><button class="btn primary" data-act="band-edit">Modifier</button></div>
-    <div class="card"><div class="row" style="align-items:flex-start;flex-wrap:wrap">
+  return `<div class="hero" ${b.background ? `style="background-image:linear-gradient(rgba(20,14,40,.15), rgba(20,14,40,.8)), url('${esc(b.background)}')"` : ''}>
       <img class="logo-big" src="${esc(b.logo || 'icon.svg')}" alt="Logo">
-      <dl class="info grow">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v ? link(v) : '<span class="muted">—</span>'}</dd>`).join('')}</dl>
-    </div></div>`;
+      <h1>${esc(b.name)}</h1>
+    </div>
+    <div class="head"><span class="muted">${b.background ? '' : "Ajoutez une image de fond et le logo du groupe avec « Modifier »."}</span><button class="btn primary" data-act="band-edit">Modifier</button></div>
+    <div class="card"><dl class="info">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v ? link(v) : '<span class="muted">—</span>'}</dd>`).join('')}</dl></div>`;
 }
 
 // --- Données
@@ -436,7 +443,7 @@ const A = {
         <datalist id="keys">${'C,C#,Db,D,Eb,E,F,F#,G,Ab,A,Bb,B'.split(',').flatMap(k => [k, k + 'm']).map(k => `<option value="${k}">`).join('')}</datalist>
         <h2>Instruments par musicien</h2>
         ${state.musicians.map(m => { const p = x ? part(x, m.id) : { instruments: [], note: '' }; return `<fieldset><legend>${esc(m.firstName)}${m.guest ? ' (invité)' : ''}</legend>
-          <div class="checks">${[...new Set([...m.instruments, ...p.instruments])].map(i => `<label><input type="checkbox" name="inst_${m.id}" value="${esc(i)}" ${p.instruments.includes(i) ? 'checked' : ''}>${esc(i)}</label>`).join('') || '<span class="muted">Aucun instrument déclaré</span>'}</div>
+          <div class="checks">${[...new Set([...m.instruments, ...p.instruments])].map(i => `<label><input type="checkbox" name="inst_${m.id}" value="${esc(i)}" ${p.instruments.includes(i) ? 'checked' : ''}>${esc(withIcon(i))}</label>`).join('') || '<span class="muted">Aucun instrument déclaré</span>'}</div>
           <input name="note_${m.id}" value="${esc(p.note)}" placeholder="Note (son, effet, accordage…)"></fieldset>`; }).join('')}
         ${area('Remarques', 'remarks', x?.remarks)}`,
       onSubmit(fd) {
@@ -499,6 +506,8 @@ const A = {
       body: `${field('Nom du groupe', 'name', b.name, 'required')}
         ${field('Logo (image)', 'logo', '', 'type="file" accept="image/*"')}
         ${b.logo ? `<label class="check" style="margin-bottom:.7rem"><input type="checkbox" name="noLogo"> Supprimer le logo actuel</label>` : ''}
+        ${field('Image de fond (photo du groupe, bannière du site…)', 'background', '', 'type="file" accept="image/*"')}
+        ${b.background ? `<label class="check" style="margin-bottom:.7rem"><input type="checkbox" name="noBg"> Supprimer l'image de fond actuelle</label>` : ''}
         ${field('Site internet', 'website', b.website, 'inputmode="url"')}
         ${field('Facebook', 'facebook', b.facebook, 'inputmode="url"')}
         ${field('Instagram', 'instagram', b.instagram, 'inputmode="url"')}
@@ -506,6 +515,8 @@ const A = {
       async onSubmit(fd) {
         for (const k of ['name', 'website', 'facebook', 'instagram', 'video']) b[k] = fd.get(k).trim();
         if (fd.has('noLogo')) b.logo = '';
+        if (fd.has('noBg')) b.background = '';
+        if (fd.get('background')?.size) b.background = await resizeImage(fd.get('background'), 1600);
         if (fd.get('logo')?.size) b.logo = await resizeImage(fd.get('logo'), 512, 'image/png');
       },
     });
@@ -574,7 +585,7 @@ function buildPrint(s, who) {
   const cell = v => `<td class="pre">${esc(v)}</td>`;
   const rows = songs.map((x, i) => `<tr><td>${i + 1}</td><td><span class="p-title">${esc(x.title)}</span>${x.author ? `<br><span class="muted">${esc(x.author)}</span>` : ''}</td>
     ${cell(keyLabel(x))}${cell(x.tempo)}${cell(x.entryOrder)}${cell(voices(x))}${cell(x.solos)}
-    ${m ? cell(part(x, m.id).instruments.join(', ')) + cell(part(x, m.id).note) : cell(ms.filter(p => partLabel(x, p.id)).map(p => `${p.firstName} : ${partLabel(x, p.id)}`).join('\n'))}
+    ${m ? cell(instText(part(x, m.id).instruments)) + cell(part(x, m.id).note) : cell(ms.filter(p => partLabel(x, p.id)).map(p => `${p.firstName} : ${partLabel(x, p.id)}`).join('\n'))}
     ${cell(x.remarks)}</tr>`).join('');
   $('#print-area').innerHTML = `<div class="p-head">${b.logo ? `<img src="${esc(b.logo)}" alt="">` : ''}<div>
       <h1>${esc(b.name)} — ${esc(s.name)}${m ? ' — ' + esc(m.firstName) : ''}</h1>

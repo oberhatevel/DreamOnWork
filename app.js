@@ -347,12 +347,14 @@ function vMusicians() {
 function vBand() {
   const b = state.band;
   const rows = [['Site internet', b.website], ['Facebook', b.facebook], ['Instagram', b.instagram], ['Vidéo de présentation', b.video]];
-  return `<div class="hero" ${b.background ? `style="background-image:linear-gradient(rgba(20,14,40,.15), rgba(20,14,40,.8)), url('${esc(b.background)}')"` : ''}>
-      <img class="logo-big" src="${esc(b.logo || 'icon.svg')}" alt="Logo">
-      <h1>${esc(b.name)}</h1>
-    </div>
-    <div class="head"><span class="muted">${b.background ? '' : "Ajoutez une image de fond et le logo du groupe avec « Modifier »."}</span><button class="btn primary" data-act="band-edit">Modifier</button></div>
-    <div class="card"><dl class="info">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v ? link(v) : '<span class="muted">—</span>'}</dd>`).join('')}</dl></div>`;
+  return `<div class="hero" ${b.background ? `style="background-image:linear-gradient(rgba(20,14,40,.1), rgba(20,14,40,.55)), url('${esc(b.background)}')"` : ''}>
+      <button class="btn primary hero-edit" data-act="band-edit">Modifier</button>
+      <div class="hero-title"><img class="logo-big" src="${esc(b.logo || 'icon.svg')}" alt="Logo"><h1>${esc(b.name)}</h1></div>
+      <div class="hero-info">
+        <dl class="info">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v ? link(v) : '—'}</dd>`).join('')}</dl>
+        ${b.background ? '' : '<p>Ajoutez une image de fond et le logo du groupe avec « Modifier ».</p>'}
+      </div>
+    </div>`;
 }
 
 // --- Données

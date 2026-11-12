@@ -233,7 +233,8 @@ function vSet(id) {
   const s = state.sets.find(x => x.id === id);
   if (!s) return notFound('#/sets');
   const songs = s.songIds.map(song).filter(Boolean);
-  const rows = songs.map((x, i) => `<div class="card"><div class="row">
+  const rows = songs.map((x, i) => `<div class="card set-row" data-song="${x.id}"><div class="row">
+      <span class="grip" title="Glisser pour déplacer">⠿</span>
       <span class="num">${i + 1}</span>
       <a class="grow" href="#/song/${x.id}?set=${s.id}" style="text-decoration:none;color:inherit">
         <h3>${esc(x.title)}</h3>
@@ -257,7 +258,7 @@ function vSet(id) {
     <div class="chips">${s.musicianIds.map(musician).filter(Boolean).map(m => `<span class="chip">${esc(m.firstName)}</span>`).join('') || '<span class="muted">Aucun musicien</span>'}</div>
     ${s.remarks ? `<p class="pre">${esc(s.remarks)}</p>` : ''}
     <div class="sec-head"><h2>Morceaux (${songs.length})</h2><button class="btn primary small" data-act="set-pick" data-id="${s.id}">Choisir les morceaux</button></div>
-    ${rows || `<div class="empty">Aucun morceau sélectionné.</div>`}
+    <div id="set-songs" data-id="${s.id}">${rows || `<div class="empty">Aucun morceau sélectionné.</div>`}</div>
     ${attSection('Enregistrements', 'set:' + s.id, 'recordings', 'audio/*,video/*')}
     ${attSection('Photos', 'set:' + s.id, 'photos', 'image/*')}`;
 }
@@ -584,6 +585,37 @@ document.addEventListener('click', e => {
   if (!el) return;
   e.preventDefault();
   Promise.resolve(A[el.dataset.act]?.(el)).catch(err => alert('Erreur : ' + err.message));
+});
+// Réordonner les morceaux d'un set en glissant la poignée (souris, doigt ou stylet).
+view.addEventListener('pointerdown', e => {
+  const grip = e.target.closest('.grip');
+  if (!grip) return;
+  const row = grip.closest('.set-row'), list = row.parentElement;
+  e.preventDefault();
+  grip.setPointerCapture(e.pointerId);
+  row.classList.add('dragging');
+  const grab = e.clientY - row.getBoundingClientRect().top;
+  const mid = el => { const r = el.getBoundingClientRect(); return r.top + r.height / 2; };
+  const move = ev => {
+    row.style.transform = '';
+    const prev = row.previousElementSibling, next = row.nextElementSibling;
+    if (prev && ev.clientY < mid(prev)) row.after(prev);   // on déplace le voisin : la ligne saisie garde le pointeur
+    else if (next && ev.clientY > mid(next)) list.insertBefore(next, row);
+    row.style.transform = `translateY(${ev.clientY - grab - row.getBoundingClientRect().top}px)`;
+    if (ev.clientY < 90) scrollBy(0, -14); else if (ev.clientY > innerHeight - 90) scrollBy(0, 14);
+  };
+  const end = () => {
+    grip.removeEventListener('pointermove', move);
+    grip.removeEventListener('pointerup', end);
+    grip.removeEventListener('pointercancel', end);
+    const set = state.sets.find(x => x.id === list.dataset.id);
+    const order = $$('.set-row', list).map(r => r.dataset.song);
+    if (set && order.length === set.songIds.length) { set.songIds = order; save(); }
+    render();
+  };
+  grip.addEventListener('pointermove', move);
+  grip.addEventListener('pointerup', end);
+  grip.addEventListener('pointercancel', end);
 });
 $('#me-select').addEventListener('change', e => { me = e.target.value; localStorage.setItem('dow:me', me); render(); });
 window.addEventListener('hashchange', () => { render(); scrollTo(0, 0); });

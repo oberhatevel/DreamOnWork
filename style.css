@@ -124,3 +124,7 @@ dialog::backdrop { background: rgba(10, 6, 20, .6); }
 .lineup { display: flex; flex-wrap: wrap; gap: .15rem .7rem; font-size: .88rem; margin-top: .15rem; }
 .who { white-space: nowrap; }
 .who.me { color: var(--accent); font-weight: 700; }
+
+.grip { flex: none; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; color: var(--muted); font-size: 1.3rem; line-height: 1; padding: .6rem .35rem; margin: -.4rem -.35rem -.4rem -.5rem; }
+.set-row.dragging { position: relative; z-index: 4; border-color: var(--accent); box-shadow: 0 8px 24px rgba(0, 0, 0, .25); }
+.set-row.dragging .grip { cursor: grabbing; }

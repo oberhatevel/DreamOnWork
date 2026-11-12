@@ -1,7 +1,7 @@
 'use strict';
-// Répertoire de départ (fiche Keynote de Yann, set list « Les Smaart 24-10-2026 »).
+// Répertoire de départ (fiche Keynote de Yann, set lists « Les Smaart » et « Le Muutch »).
 // SEED_VERSION est à incrémenter à chaque évolution ; SEED_PATCHES corrige les appareils déjà utilisés.
-const SEED_VERSION = 2;
+const SEED_VERSION = 3;
 const SEED_SONGS = [
  {
   "id": "s-keep-on-walking",
@@ -538,7 +538,8 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "guitare électrique"
     ],
     "note": ""
    },
@@ -583,7 +584,8 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "guitare électrique"
     ],
     "note": ""
    },
@@ -628,7 +630,8 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "guitare électrique"
     ],
     "note": ""
    },
@@ -673,7 +676,8 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "guitare électrique"
     ],
     "note": ""
    },
@@ -718,7 +722,8 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "guitare électrique"
     ],
     "note": ""
    },
@@ -763,7 +768,8 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "guitare électrique"
     ],
     "note": ""
    },
@@ -808,7 +814,8 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant",
+     "piano"
     ],
     "note": ""
    },
@@ -834,8 +841,8 @@ const SEED_SONGS = [
   "key": "",
   "capo": "",
   "entryOrder": "",
-  "lead": "m-valerie",
-  "singer2": "m-alex",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
   "solos": "",
   "remarks": "Sim Ré La Sol\nSim Ré Sol Ré\nSol Sol Ré Do# Sim\nMim Mim Ré Sol\n\n               Sim              Sol\nWe’d go down to the river\n        La                          Ré \nAnd into the river we’d dive\n       Sim              Mim        La   Sol\nOh down to the river we’d ride",
   "parts": {
@@ -853,13 +860,15 @@ const SEED_SONGS = [
    },
    "m-alex": {
     "instruments": [
-     "chant"
+     "chant lead",
+     "piano",
+     "harmonica"
     ],
-    "note": ""
+    "note": "Harmo A"
    },
    "m-valerie": {
     "instruments": [
-     "chant lead"
+     "chant"
     ],
     "note": ""
    },
@@ -1793,7 +1802,47 @@ const SEED_SETS = [
    "s-sweet-home-alabama",
    "s-the-passenger"
   ],
-  "remarks": "Bis : The Passenger."
+  "remarks": "Bis : The Passenger.",
+  "posterUrl": "posters/les-smaart-2026-10-24.jpg",
+  "posterSince": 3
+ },
+ {
+  "id": "set-le-muutch-2026-10-09",
+  "since": 3,
+  "name": "Le Muutch",
+  "date": "2026-10-09",
+  "type": "live",
+  "musicianIds": [
+   "m-valerie",
+   "m-alex",
+   "m-sylvain",
+   "m-francis",
+   "m-yann"
+  ],
+  "songIds": [
+   "s-chuck-es-in-love",
+   "s-water-and-salt",
+   "s-singin-the-blues",
+   "s-my-kinda-lover",
+   "s-you-know-im-no-good",
+   "s-keep-on-walking",
+   "s-aint-no-sunshine",
+   "s-dont-know-why",
+   "s-red-line",
+   "s-me-and-bobby-mcgee",
+   "s-drowin",
+   "s-telling-stories",
+   "s-the-river",
+   "s-mary-jane-s-last-dance",
+   "s-heart-of-gold",
+   "s-man-gave-names-to-all-the-animals",
+   "s-venus",
+   "s-sweet-home-alabama",
+   "s-proud-mary"
+  ],
+  "remarks": "Pause après « Don’t know why ». Bis : Proud Mary.\nChuck E’s in love : sans Yann.",
+  "posterUrl": "posters/le-muutch-2026-10-09.jpg",
+  "posterSince": 3
  }
 ];
 const SEED_PATCHES = [
@@ -2160,6 +2209,175 @@ const SEED_PATCHES = [
    "m-sylvain": {
     "instruments": [
      "basse"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 3,
+  "id": "s-chuck-es-in-love",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 3,
+  "id": "s-water-and-salt",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 3,
+  "id": "s-you-know-im-no-good",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 3,
+  "id": "s-aint-no-sunshine",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 3,
+  "id": "s-dont-know-why",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 3,
+  "id": "s-red-line",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "guitare électrique"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 3,
+  "id": "s-telling-stories",
+  "lead": "m-valerie",
+  "singer2": "m-alex",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant",
+     "piano"
+    ],
+    "note": ""
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant lead"
+    ],
+    "note": ""
+   }
+  }
+ },
+ {
+  "v": 3,
+  "id": "s-the-river",
+  "lead": "m-alex",
+  "singer2": "m-valerie",
+  "parts": {
+   "m-alex": {
+    "instruments": [
+     "chant lead",
+     "piano",
+     "harmonica"
+    ],
+    "note": "Harmo A"
+   },
+   "m-valerie": {
+    "instruments": [
+     "chant"
     ],
     "note": ""
    }

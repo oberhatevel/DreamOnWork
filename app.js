@@ -42,14 +42,15 @@ function seed() {
       m('m-yann', 'Yann', ['guitare électrique', 'piano', 'chant']),
       m('m-arthur', 'Arthur', ['saxophone'], true),
     ],
-    songs: [],
-    sets: [],
+    songs: structuredClone(SEED_SONGS),
+    sets: structuredClone(SEED_SETS),
+    seedVersion: SEED_VERSION,
   };
 }
 function normalize(d) {
   const s = seed();
   d = d && typeof d === 'object' ? d : {};
-  const out = { version: 1, band: { ...s.band, ...(d.band || {}) }, musicians: [], songs: [], sets: [] };
+  const out = { version: 1, seedVersion: d.seedVersion || 0, band: { ...s.band, ...(d.band || {}) }, musicians: [], songs: [], sets: [] };
   for (const m of Array.isArray(d.musicians) ? d.musicians : s.musicians)
     out.musicians.push({ id: m.id || uid(), firstName: m.firstName || '', instruments: Array.isArray(m.instruments) ? m.instruments : [], birthDate: m.birthDate || '', photo: m.photo || '', guest: !!m.guest });
   for (const x of Array.isArray(d.songs) ? d.songs : [])
@@ -67,6 +68,24 @@ function save() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); }
   catch (e) { alert("Enregistrement impossible : l'espace de stockage de l'appareil est plein."); }
 }
+// Répertoire de départ : ajouté une seule fois aux appareils déjà utilisés (sans doublon de titre).
+function addSeedData() {
+  if (state.seedVersion >= SEED_VERSION) return;
+  const fresh = normalize({ musicians: [], songs: SEED_SONGS, sets: SEED_SETS });
+  const idMap = {};
+  for (const x of fresh.songs) {
+    const same = state.songs.find(y => y.id === x.id || norm(y.title) === norm(x.title));
+    if (same) idMap[x.id] = same.id; else state.songs.push(x);
+  }
+  for (const t of fresh.sets) {
+    if (state.sets.some(y => y.id === t.id)) continue;
+    t.songIds = t.songIds.map(id => idMap[id] || id);
+    t.musicianIds = t.musicianIds.filter(musician);
+    state.sets.push(t);
+  }
+  state.seedVersion = SEED_VERSION;
+  save();
+}
 let me = localStorage.getItem('dow:me') || '';
 
 const musician = id => state.musicians.find(m => m.id === id);
@@ -76,6 +95,7 @@ const keyLabel = s => s.key ? s.key + (s.capo ? ` (capo ${s.capo})` : '') : (s.c
 const part = (s, mid) => s.parts[mid] || { instruments: [], note: '' };
 const partLabel = (s, mid) => { const p = part(s, mid); return [p.instruments.join(', '), p.note].filter(Boolean).join(' — '); };
 const voices = s => [s.lead && mName(s.lead), s.singer2 && mName(s.singer2)].filter(Boolean).join(' / ');
+addSeedData();
 
 // ---------- Fichiers (IndexedDB) ----------
 let dbp;
@@ -698,6 +718,7 @@ function importJson(text) {
         if (!confirm('Remplacer toutes les données de cet appareil ?')) return false;
         await fileClear(); urlCache.clear();
         state = inc;
+        state.seedVersion = SEED_VERSION;
       } else {
         if (data.band) state.band = inc.band;
         for (const k of ['musicians', 'songs', 'sets']) {

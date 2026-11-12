@@ -1,6 +1,6 @@
 // Service worker : application utilisable hors ligne.
-const CACHE = 'dow-v1';
-const ASSETS = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
+const CACHE = 'dow-v2';
+const ASSETS = ['./', 'index.html', 'style.css', 'app.js', 'seed-songs.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

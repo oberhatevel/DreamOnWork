@@ -349,9 +349,10 @@ function vBand() {
   const rows = [['Site internet', b.website], ['Facebook', b.facebook], ['Instagram', b.instagram], ['Vidéo de présentation', b.video]];
   return `<div class="hero" ${b.background ? `style="background-image:linear-gradient(rgba(20,14,40,.1), rgba(20,14,40,.55)), url('${esc(b.background)}')"` : ''}>
       <button class="btn primary hero-edit" data-act="band-edit">Modifier</button>
-      <div class="hero-title"><img class="logo-big" src="${esc(b.logo || 'icon.svg')}" alt="Logo"><h1>${esc(b.name)}</h1></div>
       <div class="hero-info">
-        <dl class="info">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v ? link(v) : '—'}</dd>`).join('')}</dl>
+        <img class="logo-big" src="${esc(b.logo || 'icon.svg')}" alt="Logo">
+        <h1>${esc(b.name)}</h1>
+        <dl class="info">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v ? link(v, v.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '')) : '—'}</dd>`).join('')}</dl>
         ${b.background ? '' : '<p>Ajoutez une image de fond et le logo du groupe avec « Modifier ».</p>'}
       </div>
     </div>`;

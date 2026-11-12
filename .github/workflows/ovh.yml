@@ -1,0 +1,36 @@
+name: Déployer sur jamhit.fr (OVH)
+on:
+  push:
+    branches: [main, claude/music-band-offline-app-bgc8ui]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ovh
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Envoyer les fichiers par SFTP
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USERNAME" ] || [ -z "$LFTP_PASSWORD" ]; then
+            echo "::warning::Secrets FTP_SERVER, FTP_USERNAME ou FTP_PASSWORD absents : rien n'a été envoyé."
+            exit 0
+          fi
+          sudo apt-get install -y -qq lftp >/dev/null
+          # Copie de l'application seule (sans le dépôt git ni les fichiers de projet).
+          mkdir dist
+          rsync -a --exclude .git --exclude .github --exclude dist --exclude README.md ./ dist/
+          # Envoi dans www/ (racine du site). Aucun fichier distant n'est supprimé.
+          lftp --env-password -u "$FTP_USERNAME" "sftp://$FTP_SERVER" -e "
+            set sftp:auto-confirm yes;
+            set net:max-retries 3;
+            set net:timeout 20;
+            mirror --reverse --only-newer --no-perms --verbose dist www;
+            bye"

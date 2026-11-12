@@ -17,9 +17,9 @@ python3 -m http.server 8000   # puis ouvrir http://localhost:8000
 
 ## Mise en ligne
 
-Le workflow `.github/workflows/pages.yml` publie le dépôt sur GitHub Pages
-(à activer une fois : Settings → Pages → Source : « GitHub Actions »).
-N'importe quel hébergement statique convient également.
+- **jamhit.fr (OVH)** : `.github/workflows/ovh.yml` envoie l'application par SFTP dans `www/` à chaque push.
+  Secrets GitHub à définir : `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`. Aucun fichier distant n'est supprimé.
+- **GitHub Pages** : `.github/workflows/pages.yml` (Settings → Pages → Source : « GitHub Actions »).
 
 ## Suite prévue
 

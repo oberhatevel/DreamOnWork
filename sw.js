@@ -2,7 +2,7 @@
 // __V__ est remplacé par le numéro de version à chaque mise en ligne.
 const V = '__V__';
 const CACHE = 'dow-' + V;
-const ASSETS = ['./', 'index.html', 'style.css?v=' + V, 'app.js?v=' + V, 'seed-songs.js?v=' + V, 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'posters/les-smaart-2026-10-24.jpg', 'posters/le-muutch-2026-10-09.jpg'];
+const ASSETS = ['./', 'index.html', 'style.css?v=' + V, 'app.js?v=' + V, 'seed-songs.js?v=' + V, 'sync.js?v=' + V, 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'posters/les-smaart-2026-10-24.jpg', 'posters/le-muutch-2026-10-09.jpg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS.map(u => new Request(u, { cache: 'no-cache' })))).then(() => self.skipWaiting()));
@@ -12,7 +12,8 @@ self.addEventListener('activate', e => {
 });
 self.addEventListener('fetch', e => {
   const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  const url = new URL(req.url);
+  if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.includes('/api/')) return;   // l'API n'est jamais mise en cache
   // Réseau d'abord, sans le cache du navigateur (pour recevoir les mises à jour) ; cache en secours hors ligne.
   e.respondWith(
     fetch(req.url, { cache: 'no-cache' }).then(res => {

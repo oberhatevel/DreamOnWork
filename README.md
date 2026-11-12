@@ -21,6 +21,14 @@ python3 -m http.server 8000   # puis ouvrir http://localhost:8000
   Secrets GitHub à définir : `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`. Aucun fichier distant n'est supprimé.
 - **GitHub Pages** (adresse de secours) : publication automatique par GitHub (Settings → Pages → Source : « Deploy from a branch »).
 
+## Synchronisation en ligne
+
+- Onglet Données → « Synchronisation en ligne » : nom du groupe + code d'accès partagé par les musiciens.
+- Côté serveur : `api/index.php` (PHP + MySQL). Fiches dans les tables `dow_bands`, `dow_docs`, `dow_files` (créées automatiquement) ;
+  fichiers joints dans `api/files/<groupe>/`, servis uniquement par l'API.
+- Accès à la base : secrets GitHub `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` ; le déploiement en tire `api/config.php` (jamais dans le dépôt).
+- Chaque appareil garde sa copie locale ; en cas de modification concurrente d'une même fiche, la plus récente l'emporte.
+
 ## Suite prévue
 
-- Accès par nom de groupe (plusieurs groupes) et synchronisation en ligne des données entre musiciens.
+- Comptes individuels par musicien (aujourd'hui : un code partagé par groupe).

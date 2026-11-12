@@ -21,6 +21,10 @@ jobs:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
           if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USERNAME" ] || [ -z "$LFTP_PASSWORD" ]; then
             echo "::warning::Secrets FTP_SERVER, FTP_USERNAME ou FTP_PASSWORD absents : rien n'a été envoyé."
@@ -32,7 +36,20 @@ jobs:
           sudo apt-get install -y -qq lftp >/dev/null
           # Copie de l'application seule (sans le dépôt git ni les fichiers de projet).
           mkdir dist
-          rsync -a --exclude .git --exclude .github --exclude dist --exclude README.md --exclude CNAME ./ dist/
+          rsync -a --exclude .git --exclude .github --exclude .gitignore --exclude dist --exclude README.md --exclude CNAME ./ dist/
+          # Accès à la base de données pour la synchronisation (fichier créé ici, jamais enregistré dans le dépôt).
+          if [ -n "$DB_HOST" ] && [ -n "$DB_NAME" ] && [ -n "$DB_USER" ] && [ -n "$DB_PASSWORD" ]; then
+            python3 - <<'PY'
+          import os
+          q = lambda v: "'" + v.strip().replace('\\', '\\\\').replace("'", "\\'") + "'"
+          e = os.environ
+          dsn = 'mysql:host=%s;dbname=%s;charset=utf8mb4' % (e['DB_HOST'].strip(), e['DB_NAME'].strip())
+          open('dist/api/config.php', 'w').write("<?php return ['dsn' => %s, 'user' => %s, 'password' => %s];\n" % (q(dsn), q(e['DB_USER']), q(e['DB_PASSWORD'])))
+          PY
+            echo "Synchronisation : accès à la base de données configuré."
+          else
+            echo "::warning::Secrets DB_HOST, DB_NAME, DB_USER ou DB_PASSWORD absents : la synchronisation en ligne reste désactivée."
+          fi
 
           for port in 22 21; do
             if timeout 15 bash -c "exec 3<>/dev/tcp/$HOST/$port" 2>/dev/null; then echo "Port $port : joignable"; else echo "Port $port : injoignable"; fi

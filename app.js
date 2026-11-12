@@ -64,10 +64,12 @@ try { state = normalize(JSON.parse(localStorage.getItem(KEY))); } catch { state 
 if (!localStorage.getItem(KEY)) state = seed();
 // Ancienne adresse par défaut (.fr) corrigée en .com sur les appareils déjà utilisés.
 if (state.band.website === 'https://DreamOnMusic.fr') { state.band.website = 'https://dreamonmusic.com'; localStorage.setItem(KEY, JSON.stringify(state)); }
-function save() {
+function persist() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); }
   catch (e) { alert("Enregistrement impossible : l'espace de stockage de l'appareil est plein."); }
 }
+// touch = false : changement automatique (mise à jour du répertoire de départ), non prioritaire à la synchronisation.
+function save(touch = true) { persist(); Sync.changed(touch); }
 // Répertoire de départ : ajouté une seule fois aux appareils déjà utilisés (sans doublon de titre).
 function addSeedData() {
   const old = state.seedVersion || 0;
@@ -105,7 +107,7 @@ function addSeedData() {
     state.sets.push(t);
   });
   state.seedVersion = SEED_VERSION;
-  save();
+  save(false);
 }
 let me = localStorage.getItem('dow:me') || '';
 
@@ -157,8 +159,12 @@ const fileClear = () => idb('readwrite', s => s.clear());
 const urlCache = new Map();
 async function fileUrl(id) {
   if (!urlCache.has(id)) {
-    const b = await fileGet(id);
-    if (!b) return '';
+    let b = await fileGet(id);
+    if (!b) {
+      b = await Sync.download(id);
+      if (!b) return '';
+      await filePut(id, b);
+    }
     urlCache.set(id, URL.createObjectURL(b));
   }
   return urlCache.get(id);
@@ -363,6 +369,18 @@ function vData() {
   const v = (document.querySelector('script[src*="app.js"]')?.src.split('v=')[1] || '').replace('__V__', 'locale');
   return `<h1>Données</h1>
     <p class="muted">Les données sont enregistrées sur cet appareil et restent disponibles hors ligne. Pour les partager avec les autres musiciens ou les sauvegarder, exportez-les puis importez le fichier sur l'autre appareil.</p>
+    <h2>Synchronisation en ligne</h2>
+    <div class="card">${Sync.enabled() ? `
+      <p>Groupe : <b>${esc(Sync.band)}</b></p>
+      <p class="muted" id="sync-status">${esc(Sync.label())}</p>
+      <div class="actions"><button class="btn primary" data-act="sync-now">Synchroniser maintenant</button>
+        <button class="btn" data-act="sync-off">Déconnecter cet appareil</button></div>
+      <p class="muted">Les changements de cet appareil sont envoyés au serveur et ceux des autres musiciens reçus automatiquement. Si une même fiche est modifiée sur deux appareils, la modification la plus récente est conservée.</p>` : `
+      <p class="muted">Partagez les données entre les appareils du groupe et sauvegardez-les sur le serveur. Tous les musiciens saisissent le même nom de groupe et le même code d'accès.</p>
+      <div class="grid2">${field('Nom du groupe', 'sync-band', Sync.slugify(state.band.name), 'id="sync-band" autocapitalize="none" autocomplete="off"')}
+      ${field("Code d'accès (4 caractères au moins)", 'sync-code', '', 'id="sync-code" autocapitalize="none" autocomplete="off"')}</div>
+      <button class="btn primary" data-act="sync-on">Connecter cet appareil</button>
+      <p class="muted" id="sync-status"></p>`}</div>
     <h2>Exporter</h2>
     <div class="card"><div class="actions">
       <button class="btn primary" data-act="exp-json">Tout (JSON, avec fichiers)</button>
@@ -625,8 +643,24 @@ const A = {
   'exp-json': exportJson,
   'exp-csv': el => exportCsv(el.dataset.id),
   imp: () => $('#import-file').click(),
+  async 'sync-on'() {
+    const name = $('#sync-band').value, code = $('#sync-code').value.trim();
+    $('#sync-status').textContent = 'Connexion…';
+    try {
+      const r = await Sync.connect(name, code);
+      render();
+      alert(r.created ? 'Groupe créé sur le serveur : cet appareil y envoie ses données.\nDonnez le nom du groupe et le code aux autres musiciens.'
+        : 'Appareil connecté au groupe.\nLes fiches du serveur remplacent celles de cet appareil ; ce qui n\'existe que sur cet appareil est envoyé.');
+    } catch (e) { $('#sync-status').textContent = 'Connexion impossible : ' + e.message; }
+  },
+  'sync-now': () => Sync.run(),
+  'sync-off'() {
+    if (!confirm('Déconnecter cet appareil ? Ses données restent sur l\'appareil et sur le serveur, mais ne seront plus échangées.')) return;
+    Sync.disconnect(); render();
+  },
   async reset() {
-    if (!confirm('Effacer toutes les données de cet appareil et revenir aux données de départ ? Pensez à exporter avant.')) return;
+    if (!confirm('Effacer toutes les données de cet appareil et revenir aux données de départ ? Pensez à exporter avant.' + (Sync.enabled() ? '\nL\'appareil sera déconnecté de la synchronisation ; les données du serveur ne sont pas effacées.' : ''))) return;
+    Sync.disconnect();
     await fileClear(); urlCache.clear();
     state = seed(); save(); render();
   },
@@ -850,6 +884,8 @@ $('#import-file').addEventListener('change', async e => {
 // ---------- Démarrage ----------
 const offline = () => { $('#offline').hidden = navigator.onLine; };
 addEventListener('online', offline); addEventListener('offline', offline); offline();
+dlg.addEventListener('close', () => { if (Sync.enabled()) setTimeout(render, 0); });
+Sync.start();
 if (!location.hash) history.replaceState(null, '', '#/sets');
 render();
 navigator.storage?.persist?.().catch(() => {});

@@ -7,13 +7,14 @@ permissions:
   contents: read
 concurrency:
   group: ovh
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Envoyer les fichiers par SFTP
+      - name: Envoyer les fichiers sur l'hébergement
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
@@ -23,14 +24,31 @@ jobs:
             echo "::warning::Secrets FTP_SERVER, FTP_USERNAME ou FTP_PASSWORD absents : rien n'a été envoyé."
             exit 0
           fi
+          # Nettoyage des valeurs saisies : espaces, préfixe ftp:// ou sftp://, barre finale.
+          HOST=$(printf '%s' "$FTP_SERVER" | tr -d '[:space:]' | sed -E 's#^[a-zA-Z]+://##; s#/.*$##')
+          USER_=$(printf '%s' "$FTP_USERNAME" | tr -d '[:space:]')
           sudo apt-get install -y -qq lftp >/dev/null
           # Copie de l'application seule (sans le dépôt git ni les fichiers de projet).
           mkdir dist
-          rsync -a --exclude .git --exclude .github --exclude dist --exclude README.md ./ dist/
+          rsync -a --exclude .git --exclude .github --exclude dist --exclude README.md --exclude CNAME ./ dist/
+
+          for port in 22 21; do
+            if timeout 15 bash -c "exec 3<>/dev/tcp/$HOST/$port" 2>/dev/null; then echo "Port $port : joignable"; else echo "Port $port : injoignable"; fi
+          done
+
           # Envoi dans www/ (racine du site). Aucun fichier distant n'est supprimé.
-          lftp --env-password -u "$FTP_USERNAME" "sftp://$FTP_SERVER" -e "
-            set sftp:auto-confirm yes;
-            set net:max-retries 3;
-            set net:timeout 20;
-            mirror --reverse --only-newer --no-perms --verbose dist www;
-            bye"
+          COMMON="set net:max-retries 2; set net:timeout 15; set net:reconnect-interval-base 5; set cmd:fail-exit yes; debug 3;"
+          MIRROR="mirror --reverse --only-newer --no-perms --verbose dist www; bye"
+          echo "::group::Essai SFTP (port 22)"
+          if timeout 150 lftp --env-password -u "$USER_" -e "$COMMON set sftp:auto-confirm yes; open sftp://$HOST; $MIRROR" < /dev/null; then
+            echo "::endgroup::"; echo "Envoi réussi par SFTP."; exit 0
+          fi
+          echo "::endgroup::"
+          echo "::warning::SFTP impossible, essai en FTP chiffré (FTPS)."
+          echo "::group::Essai FTPS (port 21)"
+          if timeout 150 lftp --env-password -u "$USER_" -e "$COMMON set ftp:ssl-force yes; set ftp:ssl-protect-data yes; set ftp:passive-mode yes; open ftp://$HOST; $MIRROR" < /dev/null; then
+            echo "::endgroup::"; echo "Envoi réussi par FTPS."; exit 0
+          fi
+          echo "::endgroup::"
+          echo "::error::Envoi impossible en SFTP comme en FTPS : vérifier le serveur, l'identifiant et le mot de passe (onglet FTP-SSH d'OVH)."
+          exit 1

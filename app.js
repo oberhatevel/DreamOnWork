@@ -352,7 +352,7 @@ function vBand() {
       <div class="hero-info">
         <img class="logo-big" src="${esc(b.logo || 'icon.svg')}" alt="Logo">
         <h1>${esc(b.name)}</h1>
-        <dl class="info">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v ? link(v, v.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '')) : '—'}</dd>`).join('')}</dl>
+        ${rows.map(([k, v]) => `<div class="hero-row"><span class="k">${k}</span> ${v ? link(v, v.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '')) : '—'}</div>`).join('')}
         ${b.background ? '' : '<p>Ajoutez une image de fond et le logo du groupe avec « Modifier ».</p>'}
       </div>
     </div>`;

@@ -1,0 +1,6 @@
+# Les fichiers de l'application sont toujours revérifiés auprès du serveur (mises à jour immédiates).
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|css|webmanifest)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

@@ -14,6 +14,8 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+      - name: Numéro de version (pour que les navigateurs chargent la mise à jour)
+        run: sed -i "s/__V__/${GITHUB_SHA::7}/g" index.html sw.js
       - name: Envoyer les fichiers sur l'hébergement
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}

@@ -316,6 +316,7 @@ function vBand() {
 
 // --- Données
 function vData() {
+  const v = (document.querySelector('script[src*="app.js"]')?.src.split('v=')[1] || '').replace('__V__', 'locale');
   return `<h1>Données</h1>
     <p class="muted">Les données sont enregistrées sur cet appareil et restent disponibles hors ligne. Pour les partager avec les autres musiciens ou les sauvegarder, exportez-les puis importez le fichier sur l'autre appareil.</p>
     <h2>Exporter</h2>
@@ -329,7 +330,8 @@ function vData() {
     <div class="card"><button class="btn primary" data-act="imp">Choisir un fichier JSON ou CSV…</button>
       <p class="muted">CSV : le type (morceaux, musiciens, sets) est reconnu d'après les colonnes. Les lignes existantes (même identifiant ou même nom) sont mises à jour, les autres ajoutées.</p></div>
     <h2>Réinitialiser</h2>
-    <div class="card"><button class="btn danger" data-act="reset">Effacer toutes les données de cet appareil</button></div>`;
+    <div class="card"><button class="btn danger" data-act="reset">Effacer toutes les données de cet appareil</button></div>
+    <p class="muted">Version de l'application : ${esc(v)}</p>`;
 }
 const notFound = back => `<div class="empty">Élément introuvable. <a href="${back}">Retour</a></div>`;
 

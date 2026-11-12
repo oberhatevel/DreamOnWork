@@ -19,7 +19,7 @@ python3 -m http.server 8000   # puis ouvrir http://localhost:8000
 
 - **jamhit.fr (OVH)** : `.github/workflows/ovh.yml` envoie l'application par SFTP dans `www/` à chaque push.
   Secrets GitHub à définir : `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`. Aucun fichier distant n'est supprimé.
-- **GitHub Pages** : `.github/workflows/pages.yml` (Settings → Pages → Source : « GitHub Actions »).
+- **GitHub Pages** (adresse de secours) : publication automatique par GitHub (Settings → Pages → Source : « Deploy from a branch »).
 
 ## Suite prévue
 

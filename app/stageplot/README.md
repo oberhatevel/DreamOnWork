@@ -4,7 +4,7 @@ Concepteur de plan de scène : on pose les musiciens et le matériel sur une sc�
 calcule les longueurs de câble, numérote le patch et dresse la liste de matériel (apporté, au groupe, à louer / manquant).
 
 Cahier des charges d'origine : `docs/plan-de-scene/README.md`.
-Ce dossier n'est **pas encore branché** sur l'application : ni `app/index.html`, ni `app/sw.js`, ni `app/tools.js` ne le référencent.
+Intégré à JamHit dans l'onglet Outils → « Plan de scène » (voir la dernière section).
 
 ## Fichiers
 
@@ -235,7 +235,7 @@ s'affiche si le nombre de voies dépasse les entrées de la table (réglage « E
 
 - Tactile sur un appareil réel (seulement émulé), Safari iOS et Firefox.
 - Rendu de l'impression dans d'autres navigateurs que Chromium.
-- Intégration dans JamHit (thème, onglet Outils, synchronisation).
+- Tactile sur appareil réel dans l'application.
 
 ## Limites connues
 
@@ -247,13 +247,23 @@ s'affiche si le nombre de voies dépasse les entrées de la table (réglage « E
 - L'éclairage n'apparaît pas sur le plan : il s'ajoute comme besoin dans l'onglet Matériel.
 - Historique d'annulation limité à 60 étapes par plan et perdu au rechargement.
 
-## Intégration dans JamHit (à faire si l'outil convient)
+## Intégration dans JamHit
 
-1. Déclarer `stageplot/stageplot.css` et `stageplot/stageplot.js` dans `app/index.html` et dans la liste `ASSETS` de
-   `app/sw.js`.
-2. Ajouter `['stage', 'Plan de scène']` au tableau `SUBS` de `app/tools.js`, rendre `StagePlot.view()` pour ce
-   sous-onglet, appeler `StagePlot.mount()` après insertion et `StagePlot.leave()` en le quittant.
-3. Appeler `StagePlot.setInput()` avec l'état du groupe (même structure que l'export « Plan de scène (JSON) ») et
-   `StagePlot.setPlans()` avec les plans synchronisés. Brancher `StagePlot.onChange` sur un type de fiche `stageplan`
-   accepté par `api/index.php`.
-4. Montrer sur la page d'un set les plans dont `setIds` le contient.
+L'outil est branché sur l'application (onglet Outils → « Plan de scène ») :
+
+| Fichier | Rôle |
+|---|---|
+| `app/index.html`, `app/sw.js` | Chargent `stageplot.css` et `stageplot.js`, et les mettent en cache hors ligne |
+| `app/tools.js` | Sous-onglet `stage` : `StagePlot.view()`, puis au montage `setInput(stageInput())`, `setPlans(state.stagePlans)` et `mount(planId)` ; `leave()` en quittant |
+| `app/app.js` | `stageInput()` (aussi utilisé par l'export « Plan de scène (JSON) »), `state.stagePlans`, `saveStagePlans()` branché sur `onChange`, section « Plan de scène » de la page d'un set, action `stage-new`, import JSON (fusion des plans) |
+| `app/sync.js` | Fiches `stageplan:<id>` et ordre des plans dans `meta:order` |
+| `api/index.php` | Accepte le type de fiche `stageplan` |
+| `app/style.css` | Largeur de page étendue pour l'outil (`main.tl-wide`) ; l'impression du plan n'est pas masquée par celle de l'application |
+
+- **Adresse** : `#/tools/stage/<identifiant du plan>` ouvre un plan précis, par exemple depuis la page d'un set.
+- **Mise à jour depuis un autre appareil** : l'outil est remonté avec les nouvelles données. Le plan affiché, la
+  sélection et l'onglet interne reviennent alors à leur état initial.
+- **Impression** : les pages du plan s'impriment en A4 portrait (page nommée `sp-portrait`), même si l'application
+  imprime ses fiches en paysage.
+- **Page de développement** : `index.html` de ce dossier reste utilisable seule, avec ses propres plans dans
+  `localStorage` (`stageplot:v1`), indépendants de ceux de l'application.

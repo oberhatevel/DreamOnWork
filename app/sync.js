@@ -29,7 +29,8 @@ const Sync = (() => {
     for (const x of state.musicians) m.set('musician:' + x.id, JSON.stringify(x));
     for (const x of state.songs) m.set('song:' + x.id, JSON.stringify(x));
     for (const x of state.sets) m.set('set:' + x.id, JSON.stringify(x));
-    m.set('meta:order', JSON.stringify({ musicians: ids(state.musicians), songs: ids(state.songs), sets: ids(state.sets) }));
+    for (const x of state.stagePlans) m.set('stageplan:' + x.id, JSON.stringify(x));
+    m.set('meta:order', JSON.stringify({ musicians: ids(state.musicians), songs: ids(state.songs), sets: ids(state.sets), stagePlans: ids(state.stagePlans) }));
     return m;
   }
   // Note l'heure de modification des fiches qui viennent de changer (touch = false : changement automatique, non prioritaire).
@@ -72,7 +73,7 @@ const Sync = (() => {
 
   // Applique au stockage local une fiche reçue du serveur. Renvoie vrai si quelque chose a changé.
   function applyRemote(r, order) {
-    const coll = { musician: 'musicians', song: 'songs', set: 'sets' }[r.k];
+    const coll = { musician: 'musicians', song: 'songs', set: 'sets', stageplan: 'stagePlans' }[r.k];
     if (r.del) {
       if (!coll) return false;
       const n = state[coll].length;
@@ -85,13 +86,14 @@ const Sync = (() => {
     if (r.k === 'meta') { if (r.id === 'order') order.value = data; return false; }
     if (!coll) return false;
     const item = normalize({ musicians: [], [coll]: [{ ...data, id: r.id }] })[coll][0];
+    if (!item) return false;
     const i = state[coll].findIndex(x => x.id === r.id);
     if (i >= 0) state[coll][i] = item; else state[coll].push(item);
     return true;
   }
   function applyOrder(o) {
     let changed = false;
-    for (const coll of ['musicians', 'songs', 'sets']) {
+    for (const coll of ['musicians', 'songs', 'sets', 'stagePlans']) {
       const pos = new Map((o?.[coll] || []).map((id, i) => [id, i]));
       const before = ids(state[coll]).join();
       state[coll] = state[coll].map((x, i) => [x, pos.has(x.id) ? pos.get(x.id) : 1e9 + i]).sort((a, b) => a[1] - b[1]).map(a => a[0]);

@@ -157,7 +157,8 @@ textarea.sp-inp { resize: vertical; }
   html.sp-printing, html.sp-printing body { background: #fff !important; color: #111 !important; padding: 0 !important; margin: 0 !important; }
   html.sp-printing body > *:not(.sp-print) { display: none !important; }
   html.sp-printing .sp-print { display: block; --bg: #fff; --card: #fff; --text: #111; --muted: #555; --line: #bbb; --accent: #4b2fb0; --accent-text: #fff; --soft: #eee; --danger: #b3261e; color: #111; background: #fff; font: 11pt/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  .sp-print .sp-page { break-after: page; page-break-after: always; }
+  @page sp-portrait { size: A4 portrait; margin: 12mm; }
+  .sp-print .sp-page { page: sp-portrait; break-after: page; page-break-after: always; }
   .sp-print .sp-page:last-child { break-after: auto; page-break-after: auto; }
   .sp-print .sp-ph { border-bottom: 2px solid #111; margin-bottom: 4mm; padding-bottom: 2mm; }
   .sp-print .sp-ph h1 { font-size: 16pt; margin: 0; }

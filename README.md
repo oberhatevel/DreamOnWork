@@ -4,7 +4,7 @@ Application web hors ligne (PWA) pour organiser les répétitions et concerts d'
 morceaux, musiciens, groupe et sets, avec édition d'une fiche PDF par musicien.
 
 - **Organisation** : la racine contient les pages publiques (`index.html` présentation, `tutoriel.html`, `site/`), l'application est dans `app/`, la synchronisation dans `api/`.
-- **Onglet Outils** (`app/tools.js`) : métronome, accordeur de guitare, accords et gammes sur le manche.
+- **Onglet Outils** (`app/tools.js`) : métronome, accordeur de guitare, accords et gammes sur le manche, plan de scène (`app/stageplot/`).
 - **Hors ligne** : après une première visite, l'application fonctionne sans réseau (service worker) et peut être installée sur l'écran d'accueil.
 - **Données** : enregistrées sur l'appareil (localStorage pour les fiches, IndexedDB pour les fichiers joints).
   Partage entre musiciens par export / import **JSON** (complet, fichiers inclus) ou **CSV** (morceaux, musiciens, sets).
@@ -13,8 +13,10 @@ morceaux, musiciens, groupe et sets, avec édition d'une fiche PDF par musicien.
 ## Matériel et plan de scène
 
 - Onglet Musiciens : matériel de chaque musicien (`musician.gear`) et matériel commun du groupe (`band.gear`, « au groupe » ou « à louer »).
-- `docs/plan-de-scene/` : cahier des charges, prompt de démarrage et données d'exemple pour un concepteur de plan de scène développé dans un projet séparé
-  (non publié sur le site). L'application exporte les données utiles depuis Données → « Plan de scène (JSON) ».
+- Outils → **Plan de scène** (`app/stageplot/`, module `StagePlot`) : plan de scène, câblage proposé, patch, liste de matériel, impression.
+  Il lit les musiciens, le matériel et les sets du groupe sans les modifier ; ses plans sont enregistrés dans `state.stagePlans`
+  et synchronisés comme fiches `stageplan`. La page d'un set montre ses plans et permet d'en créer un. Détails : `app/stageplot/README.md`.
+- `docs/plan-de-scene/` : cahier des charges d'origine (non publié sur le site). Données → « Plan de scène (JSON) » exporte toujours les données au format `stage-input`.
 
 ## Données de départ
 

@@ -1,10 +1,10 @@
 'use strict';
-/* Onglet Outils : métronome (tempo), accordeur de guitare, accords et gammes sur le manche.
+/* Onglet Outils : métronome (tempo), accordeur de guitare, accords et gammes sur le manche, plan de scène (module StagePlot).
    Repris du projet « Positions de gammes – manche de guitare ». Actions : attribut data-tl="action:valeur". */
 const Tools = (() => {
   const el = id => document.getElementById(id);
   const mod = a => ((a % 12) + 12) % 12;
-  const SUBS = [['tempo', 'Tempo'], ['tuner', 'Accordeur'], ['scales', 'Accords et gammes']];
+  const SUBS = [['tempo', 'Tempo'], ['tuner', 'Accordeur'], ['scales', 'Accords et gammes'], ['stage', 'Plan de scène']];
   const KEY = 'dow:tools';
   let st = { key: 9, q: 'min', modes: false, mode: 0, pos: 0, deg: false, nums: true, caged: false, cq: '', blues: false, bpm: 100, snd: true, fl: false };
   try { Object.assign(st, JSON.parse(localStorage.getItem(KEY)) || {}); } catch { /* réglages par défaut */ }
@@ -387,12 +387,25 @@ const Tools = (() => {
   // ====================== Intégration à l'application ======================
   function view(id) {
     const s = SUBS.some(x => x[0] === id) ? id : 'tempo';
-    return `<div class="tl-sub">${SUBS.map(([k, l]) => `<a href="#/tools/${k}" class="${k === s ? 'on' : ''}">${l}</a>`).join('')}${s === 'tempo' ? '' : '<span class="tl-mini" id="tl-mini"></span>'}</div>
-      ${s === 'tempo' ? tempoHTML() : s === 'tuner' ? tunerHTML() : scalesHTML()}`;
+    return `<div class="tl-sub">${SUBS.map(([k, l]) => `<a href="#/tools/${k}" class="${k === s ? 'on' : ''}">${l}</a>`).join('')}${s === 'tempo' || s === 'stage' ? '' : '<span class="tl-mini" id="tl-mini"></span>'}</div>
+      ${s === 'stage' ? StagePlot.view() : s === 'tempo' ? tempoHTML() : s === 'tuner' ? tunerHTML() : scalesHTML()}`;
   }
   // Appelé après l'affichage de l'onglet Outils.
-  function mount(id) {
+  // planId : plan de scène à ouvrir (lien « #/tools/stage/<plan> » depuis la page d'un set).
+  function mount(id, planId) {
     const s = SUBS.some(x => x[0] === id) ? id : 'tempo';
+    el('view').classList.toggle('tl-wide', s === 'stage');
+    if (s === 'stage') {
+      // Données du groupe en lecture seule ; chaque modification d'un plan est enregistrée et synchronisée.
+      if (sub !== 'stage') mstop();
+      sub = s;
+      StagePlot.setInput(stageInput());
+      StagePlot.setPlans(state.stagePlans);
+      StagePlot.onChange = saveStagePlans;   // fonction de app.js (le « save » de ce module ne concerne que les réglages des outils)
+      StagePlot.mount(planId);
+      return;
+    }
+    if (sub === 'stage') StagePlot.leave();
     if (s !== 'tuner') tnQuit();
     if (s !== 'scales' && full) setFull(false);
     sub = s;
@@ -408,6 +421,6 @@ const Tools = (() => {
     }
   }
   // Appelé quand on quitte l'onglet Outils : micro, métronome et plein écran sont arrêtés.
-  function leave() { if (!sub) return; sub = ''; tnQuit(); mstop(); if (full) setFull(false); }
+  function leave() { if (!sub) return; if (sub === 'stage') StagePlot.leave(); el('view').classList.remove('tl-wide'); sub = ''; tnQuit(); mstop(); if (full) setFull(false); }
   return { view, mount, leave };
 })();

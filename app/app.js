@@ -44,7 +44,7 @@ function gearList(l) {
 }
 function normalize(d) {
   d = d && typeof d === 'object' ? d : {};
-  const out = { version: 1, demo: !!d.demo, band: { ...BLANK_BAND, ...(d.band || {}) }, musicians: [], songs: [], sets: [] };
+  const out = { version: 1, demo: !!d.demo, band: { ...BLANK_BAND, ...(d.band || {}) }, musicians: [], songs: [], sets: [], stagePlans: [] };
   out.band.gear = gearList(out.band.gear);   // matériel commun du groupe
   for (const m of Array.isArray(d.musicians) ? d.musicians : [])
     out.musicians.push({ id: m.id || uid(), firstName: m.firstName || '', instruments: Array.isArray(m.instruments) ? m.instruments : [], birthDate: m.birthDate || '', photo: m.photo || '', guest: !!m.guest, gear: gearList(m.gear) });
@@ -52,6 +52,9 @@ function normalize(d) {
     out.songs.push({ id: x.id || uid(), title: x.title || '', author: x.author || '', tempo: x.tempo || '', key: x.key || '', capo: x.capo || '', entryOrder: x.entryOrder || '', lead: x.lead || '', singer2: x.singer2 || '', solos: x.solos || '', remarks: x.remarks || '', parts: x.parts && typeof x.parts === 'object' ? x.parts : {}, videos: x.videos || [], scores: x.scores || [], recordings: x.recordings || [] });
   for (const x of Array.isArray(d.sets) ? d.sets : [])
     out.sets.push({ id: x.id || uid(), name: x.name || '', date: x.date || '', type: x.type === 'live' ? 'live' : 'repetition', musicianIds: x.musicianIds || [], songIds: x.songIds || [], remarks: x.remarks || '', posterId: x.posterId || LEGACY_POSTERS[x.posterUrl] || '', posterUrl: /^posters\/demo-[\w.-]+$/.test(x.posterUrl || '') ? x.posterUrl : '', recordings: x.recordings || [], photos: x.photos || [] });
+  // Plans de scène (format « stage-plan », voir app/stageplot/README.md) : conservés tels quels, le module les vérifie.
+  for (const p of Array.isArray(d.stagePlans) ? d.stagePlans : [])
+    if (p && typeof p === 'object' && /^[A-Za-z0-9_-]{1,64}$/.test(p.id || '') && p.stage && Array.isArray(p.items)) out.stagePlans.push(p);
   return out;
 }
 let state;
@@ -173,8 +176,8 @@ const selectMusician = (label, name, value) => `<label class="f">${label}<select
 // ---------- Rendu ----------
 const view = $('#view');
 function route() {
-  const [, page = 'sets', id] = location.hash.split('/');
-  return { page, id };
+  const [, page = 'sets', id, sub] = location.hash.split('/');
+  return { page, id, sub };
 }
 // Lien « Se connecter à mon groupe » de la page de présentation.
 function openJoin() {
@@ -183,7 +186,7 @@ function openJoin() {
   setTimeout(() => A.join(), 0);
 }
 function render() {
-  const { page, id } = route();
+  const { page, id, sub } = route();
   $('#brand-name').innerHTML = `<b>Jam<i>Hit</i></b><span class="brand-band">${esc(state.band.name || 'Mon groupe')}</span>`;
   $('.top').style.backgroundImage = state.band.background ? `linear-gradient(rgba(20,14,40,.72), rgba(20,14,40,.72)), url("${state.band.background}")` : '';
   document.title = 'JamHit — ' + (state.band.name || 'Mon groupe');
@@ -194,7 +197,7 @@ function render() {
   $('#demo-banner').hidden = !state.demo;
   view.innerHTML = (pages[page] || vSets)(id);
   hydrateFiles(view);
-  if (page === 'tools') Tools.mount(id); else Tools.leave();
+  if (page === 'tools') Tools.mount(id, sub); else Tools.leave();
   const q = $('#song-search');
   if (q) q.addEventListener('input', () => { filterList(q.value, '#song-list > *'); $('#song-list').classList.toggle('filtering', !!q.value.trim()); });
 }
@@ -250,8 +253,17 @@ function vSet(id) {
     ${s.remarks ? `<p class="pre">${esc(s.remarks)}</p>` : ''}
     <div class="sec-head"><h2>Morceaux (${songs.length})</h2><button class="btn primary small" data-act="set-pick" data-id="${s.id}">Choisir les morceaux</button></div>
     <div id="set-songs" data-id="${s.id}">${rows || `<div class="empty">Aucun morceau sélectionné.</div>`}</div>
+    ${stageSection(s)}
     ${attSection('Enregistrements', 'set:' + s.id, 'recordings', 'audio/*,video/*')}
     ${attSection('Photos', 'set:' + s.id, 'photos', 'image/*')}`;
+}
+// Plans de scène associés au set (outil « Plan de scène » de l'onglet Outils).
+function stageSection(s) {
+  const plans = state.stagePlans.filter(p => (p.setIds || []).includes(s.id));
+  return `<div class="sec-head"><h2>Plan de scène</h2><button class="btn small" data-act="stage-new" data-id="${s.id}">+ Nouveau plan</button></div>
+    ${plans.map(p => `<a class="card" href="#/tools/stage/${esc(p.id)}"><div class="row"><div class="grow"><h3>${esc(p.name)}</h3>
+      <div class="muted">${esc(String(p.stage.width).replace('.', ','))} × ${esc(String(p.stage.depth).replace('.', ','))} m · ${(p.items || []).filter(i => i.kind === 'musician').length} musicien(s) · ${(p.links || []).length} liaison(s)</div></div><span class="muted">›</span></div></a>`).join('')
+      || `<div class="empty">Aucun plan de scène associé à ce set.</div>`}`;
 }
 
 // --- Morceaux
@@ -436,6 +448,15 @@ const A = {
         if (!s) { state.sets.push(t); location.hash = '#/set/' + t.id; }
       },
     });
+  },
+  // Nouveau plan de scène associé à un set, ouvert dans l'onglet Outils.
+  'stage-new'(el) {
+    const s = state.sets.find(x => x.id === el.dataset.id);
+    if (!s) return;
+    const p = { id: 'plan-' + uid(), name: s.name || 'Plan de scène', updated: Date.now(), setIds: [s.id], stage: { width: 6, depth: 4, unit: 'm' }, items: [], links: [], needs: [], notes: '' };
+    state.stagePlans.push(p);
+    save();
+    location.hash = '#/tools/stage/' + p.id;
   },
   'set-del'(el) {
     const s = state.sets.find(x => x.id === el.dataset.id);
@@ -653,16 +674,7 @@ const A = {
   'exp-json': exportJson,
   'exp-csv': el => exportCsv(el.dataset.id),
   // Données utiles à un concepteur de plan de scène : groupe, musiciens, instruments, matériel, sets.
-  'exp-stage'() {
-    const gear = l => l.map(({ id, name, type, qty, note, owner }) => ({ id, name, type, qty, note, owner }));
-    download(`${slug()}-plan-de-scene-${today()}.json`, JSON.stringify({
-      app: 'jamhit', format: 'stage-input', version: 1, exportedAt: new Date().toISOString(),
-      band: { name: state.band.name },
-      musicians: state.musicians.map(m => ({ id: m.id, firstName: m.firstName, instruments: m.instruments, guest: m.guest, gear: gear(m.gear).map(({ owner, ...g }) => g) })),
-      commonGear: gear(state.band.gear),
-      sets: state.sets.map(s => ({ id: s.id, name: s.name, date: s.date, type: s.type, musicianIds: s.musicianIds })),
-    }, null, 1), 'application/json');
-  },
+  'exp-stage'() { download(`${slug()}-plan-de-scene-${today()}.json`, JSON.stringify(stageInput(), null, 1), 'application/json'); },
   imp: () => $('#import-file').click(),
   async 'sync-on'() {
     const name = $('#sync-band').value, code = $('#sync-code').value.trim();
@@ -798,6 +810,21 @@ function download(name, content, type) {
 }
 const slug = () => (state.band.name || 'groupe').toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'groupe';
 
+// Données utiles au plan de scène (format « stage-input ») : groupe, musiciens, instruments, matériel, sets.
+// Sert à l'export « Plan de scène (JSON) » et à l'outil Plan de scène de l'onglet Outils.
+// Plans modifiés dans l'outil Plan de scène : enregistrés et synchronisés comme les autres fiches.
+function saveStagePlans(plans) { state.stagePlans = plans; save(); }
+function stageInput() {
+  const gear = l => l.map(({ id, name, type, qty, note, owner }) => ({ id, name, type, qty, note, owner }));
+  return {
+    app: 'jamhit', format: 'stage-input', version: 1, exportedAt: new Date().toISOString(),
+    band: { name: state.band.name },
+    musicians: state.musicians.map(m => ({ id: m.id, firstName: m.firstName, instruments: m.instruments, guest: m.guest, gear: gear(m.gear).map(({ owner, ...g }) => g) })),
+    commonGear: gear(state.band.gear),
+    sets: state.sets.map(s => ({ id: s.id, name: s.name, date: s.date, type: s.type, musicianIds: s.musicianIds })),
+  };
+}
+
 async function exportJson() {
   const files = [];
   for (const id of await fileKeys()) { const b = await fileGet(id); files.push({ id, type: b.type, data: await blobToDataUrl(b) }); }
@@ -916,11 +943,11 @@ function importCsv(text) {
 function importJson(text) {
   const j = JSON.parse(text);
   const data = j.data || j;
-  if (!data || !(data.band || data.songs || data.musicians || data.sets)) throw new Error("Ce fichier JSON n'est pas un export de l'application.");
+  if (!data || !(data.band || data.songs || data.musicians || data.sets || data.stagePlans)) throw new Error("Ce fichier JSON n'est pas un export de l'application.");
   const inc = normalize({ musicians: [], ...data });
   openDialog({
     title: 'Importer le fichier JSON', ok: 'Importer',
-    body: `<p>${inc.songs.length} morceau(x), ${inc.musicians.length} musicien(s), ${inc.sets.length} set(s), ${(j.files || []).length} fichier(s).</p>
+    body: `<p>${inc.songs.length} morceau(x), ${inc.musicians.length} musicien(s), ${inc.sets.length} set(s), ${inc.stagePlans.length} plan(s) de scène, ${(j.files || []).length} fichier(s).</p>
       <label class="f">Mode<select name="mode"><option value="merge">Fusionner avec les données de cet appareil</option><option value="replace">Remplacer toutes les données de cet appareil</option></select></label>
       <p class="muted">Fusion : les éléments du fichier remplacent ceux de même identifiant, les autres sont conservés.</p>`,
     async onSubmit(fd) {
@@ -930,7 +957,7 @@ function importJson(text) {
         state = inc;
       } else {
         if (data.band) state.band = inc.band;
-        for (const k of ['musicians', 'songs', 'sets']) {
+        for (const k of ['musicians', 'songs', 'sets', 'stagePlans']) {
           if (!Array.isArray(data[k])) continue;
           for (const x of inc[k]) { const i = state[k].findIndex(y => y.id === x.id); if (i >= 0) state[k][i] = x; else state[k].push(x); }
         }

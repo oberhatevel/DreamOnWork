@@ -1,10 +1,9 @@
 /* Pages publiques JamHit : présentation et tutoriel */
+/* Thème sombre, sur tous les appareils. */
 :root {
-  --bg: #fbf9ff; --card: #ffffff; --text: #1d1a26; --muted: #625d72; --line: #e3deee;
-  --accent: #6d3fd1; --accent2: #c0267a; --soft: #f1ebfc; --on-accent: #ffffff;
-}
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #14111d; --card: #1f1b2c; --text: #eeeaf6; --muted: #aaa4bd; --line: #37314a; --accent: #a586f5; --accent2: #f472b6; --soft: #2a2340; --on-accent: #15101f; }
+  color-scheme: dark;
+  --bg: #14111d; --card: #1f1b2c; --text: #eeeaf6; --muted: #aaa4bd; --line: #37314a;
+  --accent: #a586f5; --accent2: #f472b6; --soft: #1b1728; --on-accent: #15101f;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
@@ -29,7 +28,7 @@ img { max-width: 100%; height: auto; }
 .hero h1 em { font-style: normal; color: var(--accent2); }
 .hero p { font-size: 1.15rem; color: var(--muted); margin: 0 0 1.6rem; max-width: 34em; }
 .cta { display: flex; gap: .8rem; flex-wrap: wrap; }
-.shot { border-radius: 22px; border: 1px solid var(--line); box-shadow: 0 18px 50px rgba(60, 30, 120, .18); display: block; margin: 0 auto; max-height: 560px; width: auto; }
+.shot { border-radius: 22px; border: 1px solid var(--line); box-shadow: 0 18px 50px rgba(0, 0, 0, .55); display: block; margin: 0 auto; max-height: 560px; width: auto; }
 
 section { padding: 2.6rem 0; }
 section h2 { font-size: 1.7rem; margin: 0 0 .4rem; letter-spacing: -.01em; }

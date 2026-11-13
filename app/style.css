@@ -1,12 +1,8 @@
+/* Thème sombre, sur tous les appareils (application, présentation et tutoriel). */
 :root {
-  --bg: #f4f2f8; --card: #ffffff; --text: #1d1a26; --muted: #6b667a; --line: #dedae8;
-  --accent: #6d3fd1; --accent-text: #ffffff; --soft: #ece6fa; --danger: #c0392b; --live: #d1483f; --rehearsal: #2c7a62;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14111d; --card: #1f1b2c; --text: #eeeaf6; --muted: #a39db5; --line: #37314a;
-    --accent: #a586f5; --accent-text: #15101f; --soft: #2c2540; --danger: #ef7b6e; --live: #f08a80; --rehearsal: #6fcfb0;
-  }
+  color-scheme: dark;
+  --bg: #14111d; --card: #1f1b2c; --text: #eeeaf6; --muted: #a39db5; --line: #37314a;
+  --accent: #a586f5; --accent-text: #15101f; --soft: #2c2540; --danger: #ef7b6e; --live: #f08a80; --rehearsal: #6fcfb0;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -119,6 +115,7 @@ dialog::backdrop { background: rgba(10, 6, 20, .6); }
 @media (max-width: 520px) { .grid2 { grid-template-columns: 1fr; } .tabs a { font-size: .85rem; padding: .7rem .4rem; } }
 
 @media print {
+  :root { color-scheme: light; }
   @page { size: A4 landscape; margin: 10mm; }
   body { background: #fff; color: #000; padding: 0; font-size: 10pt; }
   body > *:not(#print-area) { display: none !important; }

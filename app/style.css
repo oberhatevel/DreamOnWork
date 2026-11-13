@@ -224,3 +224,7 @@ body.tl-full #demo-banner { display: none; }
 .gear-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; font-weight: 600; font-size: .9rem; margin-bottom: .3rem; }
 .gear .att { padding: .3rem 0; }
 .gear .badge { margin-left: .3rem; }
+
+.tl-lv { display: flex; align-items: center; gap: .5rem; font-size: .78rem; color: var(--muted); }
+.tl-lv i { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.tl-lv b { display: block; height: 100%; width: 0; background: #22c55e; transition: width .08s linear; }

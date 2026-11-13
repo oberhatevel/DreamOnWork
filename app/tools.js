@@ -79,10 +79,11 @@ const Tools = (() => {
   // ====================== Accordeur ======================
   // Micro + détection de hauteur YIN, aiguille ±50 cents, note de référence (Web Audio).
   const TS = [['E', 2, 82.41, 6], ['A', 2, 110, 5], ['D', 3, 146.83, 4], ['G', 3, 196, 3], ['B', 3, 246.94, 2], ['E', 4, 329.63, 1]];
+  let tnBytes = null, tnHeard = 0;
   let tnOn = false, tnAuto = true, tnSel = 0, tnDone = [], tnCtx = null, tnStream = null, tnAn = null, tnBuf = null, tnRaf = 0, tnLast = 0, tnHist = [], tnIn = 0, tnSil = 0, tnTc = null, tnOsc = null, tnTimer = null;
   function yin(buf, sr) {
     const W = 2048, tmin = Math.max(2, Math.floor(sr / 400)), tmax = Math.min(Math.floor(sr / 60), buf.length - W - 1);
-    let r = 0; for (let i = 0; i < W; i++) r += buf[i] * buf[i]; if (Math.sqrt(r / W) < 0.006) return -1;
+    let r = 0; for (let i = 0; i < W; i++) r += buf[i] * buf[i]; if (Math.sqrt(r / W) < 0.002) return -1;   // seuil bas : micros de tablette peu sensibles
     const d = new Float32Array(tmax + 2); let acc = 0; d[0] = 1;
     for (let t = 1; t <= tmax; t++) { let s = 0; for (let j = 0; j < W; j++) { const x = buf[j] - buf[j + t]; s += x * x; } acc += s; d[t] = acc ? s * t / acc : 1; }
     let t = -1;
@@ -121,31 +122,57 @@ const Tools = (() => {
     const now = performance.now();
     if (a <= 5) { if (!tnIn) tnIn = now; else if (now - tnIn > 900 && !tnDone[i]) { tnDone[i] = true; tnChips(); } } else tnIn = 0;
   }
+  // Lecture du signal : flottants si le navigateur le permet, sinon octets convertis (anciens Safari).
+  function tnRead() {
+    if (tnAn.getFloatTimeDomainData) { tnAn.getFloatTimeDomainData(tnBuf); return; }
+    const b = tnBytes || (tnBytes = new Uint8Array(tnAn.fftSize));
+    tnAn.getByteTimeDomainData(b);
+    for (let i = 0; i < b.length; i++) tnBuf[i] = (b[i] - 128) / 128;
+  }
+  function tnLevel() { let r = 0; for (let i = 0; i < 2048; i++) r += tnBuf[i] * tnBuf[i]; return Math.sqrt(r / 2048); }
   function tnLoop(now) {
     tnRaf = requestAnimationFrame(tnLoop);
     if (now - tnLast < 50) return; tnLast = now;
-    tnAn.getFloatTimeDomainData(tnBuf);
+    if (!tnCtx || !tnAn) return;
+    if (tnCtx.state !== 'running') { tnCtx.resume().catch(() => {}); tnMsg('Son en pause : touchez l’écran pour réactiver l’écoute.'); return; }
+    tnRead();
+    // Niveau du micro : montre que le son arrive, même sans note reconnue
+    const lv = tnLevel(), bar = el('tl-level');
+    if (bar) bar.style.width = Math.min(100, Math.round(Math.sqrt(lv) * 220)) + '%';
+    if (lv > 0.0005) tnHeard = now; else if (now - tnHeard > 4000) tnMsg('Le micro ne capte aucun son. Vérifiez que le micro de l’appareil n’est pas couvert, ou que le bon micro est autorisé pour ce site.');
+    if (lv > 0.0005 && el('tl-msg') && /ne capte aucun son|en pause/.test(el('tl-msg').textContent)) tnMsg('');
     const f = yin(tnBuf, tnCtx.sampleRate);
     if (f > 0) { tnSil = 0; tnHist.push(f); if (tnHist.length > 5) tnHist.shift(); const s = [...tnHist].sort((x, y) => x - y); tnUpdate(s[s.length >> 1]); }
     else if (++tnSil > 10 && tnHist.length) { tnHist = []; tnIn = 0; tnIdle(); }
   }
-  async function tnStart() {
-    try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw 0;
-      tnStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
-      const C = window.AudioContext || window.webkitAudioContext; tnCtx = new C(); if (tnCtx.state === 'suspended') await tnCtx.resume();
-      tnAn = tnCtx.createAnalyser(); tnAn.fftSize = 4096; tnBuf = new Float32Array(tnAn.fftSize);
-      tnCtx.createMediaStreamSource(tnStream).connect(tnAn);
-      tnOn = true; if (el('tl-msg')) el('tl-msg').textContent = ''; tnChips(); tnIdle(); tnRaf = requestAnimationFrame(tnLoop);
-    } catch {
-      tnStop();
-      if (el('tl-msg')) el('tl-msg').textContent = "Micro indisponible : accès refusé, ou page ouverte sans HTTPS. Autorisez le micro pour ce site, ou utilisez la note de référence.";
-    }
+  const tnMsg = t => { const m = el('tl-msg'); if (m && m.textContent !== t) m.textContent = t; };
+  function tnStart() {
+    // Le contexte audio est créé et relancé tout de suite, pendant l'appui : iPhone et iPad refusent sinon de le démarrer.
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { tnMsg('Accordeur indisponible sur ce navigateur : utilisez la note de référence.'); return; }
+    try { tnCtx = new C(); tnCtx.resume().catch(() => {}); } catch { tnCtx = null; tnMsg('Audio indisponible sur ce navigateur.'); return; }
+    tnMsg('Autorisation du micro…');
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } })
+      .catch(() => navigator.mediaDevices.getUserMedia({ audio: true }))   // certains appareils refusent les réglages fins
+      .then(stream => {
+        if (!tnCtx) { stream.getTracks().forEach(t => t.stop()); return; }
+        tnStream = stream;
+        tnAn = tnCtx.createAnalyser(); tnAn.fftSize = 4096; tnBuf = new Float32Array(tnAn.fftSize); tnBytes = null;
+        const src = tnCtx.createMediaStreamSource(stream), mute = tnCtx.createGain();
+        mute.gain.value = 0;
+        // Safari ne traite le son que si la chaîne aboutit à la sortie : on la relie, volume à zéro.
+        src.connect(tnAn); tnAn.connect(mute); mute.connect(tnCtx.destination);
+        tnCtx.resume().catch(() => {});
+        tnOn = true; tnHeard = performance.now(); tnMsg(''); tnChips(); tnIdle();
+        cancelAnimationFrame(tnRaf); tnRaf = requestAnimationFrame(tnLoop);
+      })
+      .catch(() => { tnStop(); tnMsg('Micro indisponible : accès refusé, ou page ouverte sans HTTPS. Autorisez le micro pour ce site dans les réglages du navigateur, ou utilisez la note de référence.'); });
   }
   function tnStop() {
     cancelAnimationFrame(tnRaf); tnOn = false; tnHist = []; tnIn = 0;
     if (tnStream) tnStream.getTracks().forEach(t => t.stop()); tnStream = null;
     if (tnCtx) tnCtx.close().catch(() => {}); tnCtx = null; tnAn = null;
+    const bar = el('tl-level'); if (bar) bar.style.width = '0';
     tnChips(); tnIdle();
   }
   function tnToneStop() {
@@ -171,6 +198,7 @@ const Tools = (() => {
       <div class="tl-note"><span id="tl-name">–</span><small id="tl-hz"></small></div>
       <div class="tl-meter"><i class="z"></i><i class="needle" id="tl-needle"></i><span class="l">♭</span><span class="r">♯</span></div>
       <div class="tl-stat" id="tl-stat" aria-live="polite"></div>
+      <div class="tl-lv" title="Niveau du micro"><span>Micro</span><i><b id="tl-level"></b></i></div>
       <div class="tl-ctl"><button class="tl-b" data-tl="mic" id="tl-mic"></button><button class="tl-b" data-tl="auto" id="tl-auto"></button><button class="tl-b" data-tl="tone" id="tl-tone">🔊 Note de référence</button></div>
       <small class="muted" id="tl-msg"></small>
       <p class="muted">Accordage standard (Mi La Ré Sol Si Mi). En mode Auto, la corde la plus proche de la note jouée est choisie toute seule ; une corde tenue juste environ une seconde reçoit un ✓.</p>
@@ -382,6 +410,8 @@ const Tools = (() => {
     if (sub !== 'scales' || !el('tl-board') || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || document.querySelector('dialog[open]')) return;
     if (e.key === 'ArrowLeft') act('k-'); else if (e.key === 'ArrowRight') act('k+'); else if (e.key === 'Escape' && full) act('h');
   });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && tnCtx && tnCtx.state !== 'running') tnCtx.resume().catch(() => {}); });
+  document.addEventListener('pointerdown', () => { if (tnOn && tnCtx && tnCtx.state !== 'running') tnCtx.resume().catch(() => {}); }, true);
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && full) { full = false; document.body.classList.remove('tl-full'); } });
 
   // ====================== Intégration à l'application ======================

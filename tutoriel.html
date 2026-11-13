@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutoriel JamHit — prise en main</title>
+<meta name="description" content="Prise en main de JamHit : installer l'application, remplir le répertoire, préparer un set, éditer la fiche PDF, synchroniser le groupe.">
+<meta name="theme-color" content="#6d3fd1">
+<link rel="icon" href="site/jamhit-logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="site/site.css">
+</head>
+<body>
+<header class="wrap nav">
+  <a class="brand" href="accueil.html"><img src="site/jamhit-logo.svg" alt=""><span>Jam<span>Hit</span></span></a>
+  <nav>
+    <a href="accueil.html">Présentation</a>
+    <a class="btn primary small" href="./">Ouvrir l'application</a>
+  </nav>
+</header>
+
+<div class="wrap doc">
+  <aside class="toc">
+    <b>Sommaire</b>
+    <ol>
+      <li><a href="#installer">Installer l'application</a></li>
+      <li><a href="#moi">Dire qui vous êtes</a></li>
+      <li><a href="#groupe">Le groupe et les musiciens</a></li>
+      <li><a href="#morceaux">Le répertoire</a></li>
+      <li><a href="#sets">Préparer un set</a></li>
+      <li><a href="#pdf">La fiche PDF</a></li>
+      <li><a href="#fichiers">Partitions et enregistrements</a></li>
+      <li><a href="#sync">Synchroniser le groupe</a></li>
+      <li><a href="#sauvegarde">Sauvegarder et importer</a></li>
+      <li><a href="#questions">Questions fréquentes</a></li>
+    </ol>
+  </aside>
+
+  <main>
+    <h1>Prise en main</h1>
+    <p>Dix minutes suffisent pour préparer la prochaine répétition. L'application comporte cinq onglets : <kbd>Sets</kbd>, <kbd>Morceaux</kbd>, <kbd>Musiciens</kbd>, <kbd>Groupe</kbd> et <kbd>Données</kbd>. Tout ce que vous saisissez est enregistré immédiatement, sans bouton « Sauvegarder ».</p>
+
+    <h2 id="installer">1. Installer l'application</h2>
+    <p>JamHit s'utilise dans le navigateur, mais il est préférable de l'ajouter à l'écran d'accueil : elle s'ouvre alors comme une application et fonctionne sans réseau.</p>
+    <ul>
+      <li><b>iPhone / iPad (Safari)</b> : bouton <kbd>Partager</kbd>, puis <kbd>Sur l'écran d'accueil</kbd>.</li>
+      <li><b>Android (Chrome)</b> : menu <kbd>⋮</kbd>, puis <kbd>Installer l'application</kbd> ou <kbd>Ajouter à l'écran d'accueil</kbd>.</li>
+      <li><b>Ordinateur (Chrome, Edge)</b> : icône d'installation à droite de la barre d'adresse.</li>
+    </ul>
+    <div class="tip">Sur iPhone et iPad, l'installation sur l'écran d'accueil évite aussi que Safari n'efface les données d'un site resté longtemps sans visite.</div>
+
+    <h2 id="moi">2. Dire qui vous êtes</h2>
+    <p>En haut à droite, choisissez votre prénom dans <kbd>Je suis</kbd>. Votre nom ressort alors en couleur dans les listes, avec votre note personnelle pour chaque morceau, et la fiche PDF vous est proposée par défaut.</p>
+
+    <h2 id="groupe">3. Le groupe et les musiciens</h2>
+    <ul>
+      <li><b>Onglet Groupe</b> : bouton <kbd>Modifier</kbd> pour le nom, le logo, l'image de fond et les liens (site, Facebook, Instagram, vidéo).</li>
+      <li><b>Onglet Musiciens</b> : prénom, instruments (séparés par des virgules), date de naissance et photo. Cochez « Musicien invité » pour quelqu'un qui ne joue qu'occasionnellement : il ne sera pas présélectionné dans les nouveaux sets.</li>
+    </ul>
+
+    <h2 id="morceaux">4. Le répertoire</h2>
+    <p>L'onglet <kbd>Morceaux</kbd> contient tous les titres du groupe, numérotés. Chaque morceau n'existe qu'une fois : le modifier ici le modifie dans tous les sets.</p>
+    <ol>
+      <li><kbd>+ Nouveau morceau</kbd> : seul le nom est obligatoire, le reste se complète au fil des répétitions.</li>
+      <li>Renseignez le tempo, la tonalité et le capo, l'ordre d'entrée, le chanteur lead et le second chanteur, les solos.</li>
+      <li>Dans « Instruments par musicien », cochez ce que joue chacun et ajoutez sa note (son, effet, accordage).</li>
+      <li>Pour changer l'ordre du répertoire, glissez la poignée <kbd>⠿</kbd> ou utilisez les flèches <kbd>▲</kbd> <kbd>▼</kbd>.</li>
+    </ol>
+    <figure><img src="site/ecran-morceau.png" alt="Fiche d'un morceau : tempo, tonalité, chanteurs et instruments de chaque musicien" width="420" height="760"><figcaption>La fiche d'un morceau, avec les instruments de chaque musicien.</figcaption></figure>
+
+    <h2 id="sets">5. Préparer un set</h2>
+    <p>Un set est une séance : une répétition ou un concert.</p>
+    <ol>
+      <li>Onglet <kbd>Sets</kbd>, <kbd>+ Nouveau set</kbd> : nom, date, type (répétition ou live) et musiciens présents.</li>
+      <li><kbd>Choisir les morceaux</kbd> : cochez les titres dans le répertoire. Un titre absent peut être créé directement depuis cette fenêtre.</li>
+      <li>Mettez-les dans l'ordre en glissant la poignée <kbd>⠿</kbd>. La croix <kbd>✕</kbd> retire un morceau du set sans le supprimer du répertoire.</li>
+      <li>Pour un concert, ajoutez l'affiche par <kbd>Modifier</kbd>.</li>
+    </ol>
+    <div class="tip"><kbd>Dupliquer</kbd> crée un nouveau set à partir d'un ancien : pratique pour repartir de la dernière répétition.</div>
+    <figure><img src="site/ecran-set.png" alt="Un set de concert avec son affiche et la liste des morceaux" width="420" height="760"><figcaption>Un set de concert : affiche, musiciens, puis les morceaux dans l'ordre.</figcaption></figure>
+
+    <h2 id="pdf">6. La fiche PDF</h2>
+    <ol>
+      <li>Dans le set, bouton <kbd>PDF</kbd>.</li>
+      <li>Choisissez un musicien (sa fiche personnelle, avec ses instruments et ses notes) ou « Tout le groupe ».</li>
+      <li>Dans la fenêtre d'impression, choisissez <kbd>Enregistrer au format PDF</kbd> comme imprimante, ou imprimez directement.</li>
+    </ol>
+
+    <h2 id="fichiers">7. Partitions et enregistrements</h2>
+    <p>Sur la fiche d'un morceau (liens vidéo, partitions, enregistrements) ou d'un set (enregistrements, photos), le bouton <kbd>+ Ajouter</kbd> accepte un lien (YouTube, Drive…) ou un fichier de votre appareil, avec un libellé et une date.</p>
+    <div class="tip">Pour les vidéos, préférez un lien : elles sont trop volumineuses pour être stockées dans l'application.</div>
+
+    <h2 id="sync">8. Synchroniser le groupe</h2>
+    <p>Sans synchronisation, chaque appareil garde ses propres données. Pour que tout le groupe voie la même chose :</p>
+    <ol>
+      <li>Onglet <kbd>Données</kbd>, section « Synchronisation en ligne ».</li>
+      <li>Saisissez le nom du groupe et le code d'accès, identiques pour tous les musiciens, puis <kbd>Connecter cet appareil</kbd>.</li>
+      <li>Le premier appareil connecté crée le groupe et y envoie ses données ; les suivants les reçoivent.</li>
+    </ol>
+    <figure><img src="site/ecran-sync.png" alt="Section Synchronisation en ligne de l'onglet Données" width="420" height="520"><figcaption>La connexion d'un appareil au groupe.</figcaption></figure>
+    <ul>
+      <li>Les modifications partent ensuite toutes seules. Un nuage ☁️ en haut de l'écran indique que tout est synchronisé, ⚠️ signale un problème.</li>
+      <li>Hors ligne, vous continuez à travailler : les changements partent au retour du réseau.</li>
+      <li>Si deux musiciens modifient la même fiche, la modification la plus récente est conservée.</li>
+      <li>Le code d'accès donne le droit de tout lire et de tout modifier : ne le communiquez qu'aux membres du groupe.</li>
+    </ul>
+
+    <h2 id="sauvegarde">9. Sauvegarder et importer</h2>
+    <ul>
+      <li><b>Tout (JSON, avec fichiers)</b> : une copie complète, à conserver hors de l'appareil. C'est aussi le moyen de transmettre les données sans synchronisation.</li>
+      <li><b>CSV</b> : morceaux, musiciens ou sets dans un fichier lisible par un tableur, sans les fichiers joints.</li>
+      <li><b>Importer</b> : un fichier JSON (fusion ou remplacement) ou CSV. À l'import d'un CSV, les lignes déjà connues sont mises à jour, les autres ajoutées.</li>
+    </ul>
+
+    <h2 id="questions">10. Questions fréquentes</h2>
+    <p><b>Je ne vois pas la dernière version de l'application.</b><br>Rechargez la page une ou deux fois avec du réseau. Le numéro de version figure en bas de l'onglet Données.</p>
+    <p><b>J'ai modifié un morceau dans un set : est-il modifié ailleurs ?</b><br>Oui. Un morceau est une fiche unique, partagée par le répertoire et tous les sets.</p>
+    <p><b>Puis-je effacer les données du site dans mon navigateur ?</b><br>Seulement si l'appareil est synchronisé ou après un export JSON : sinon vos saisies sont perdues.</p>
+    <p><b>Un fichier joint n'apparaît pas sur un autre appareil.</b><br>Les fichiers sont téléchargés à l'ouverture de la fiche ; il faut du réseau la première fois.</p>
+  </main>
+</div>
+
+<footer><div class="wrap">JamHit — application web pour groupes de musique. <a href="accueil.html">Présentation</a> · <a href="./">Application</a></div></footer>
+</body>
+</html>

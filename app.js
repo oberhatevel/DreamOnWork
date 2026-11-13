@@ -393,6 +393,8 @@ function vData() {
       <p class="muted">CSV : le type (morceaux, musiciens, sets) est reconnu d'après les colonnes. Les lignes existantes (même identifiant ou même nom) sont mises à jour, les autres ajoutées.</p></div>
     <h2>Réinitialiser</h2>
     <div class="card"><button class="btn danger" data-act="reset">Effacer toutes les données de cet appareil</button></div>
+    <h2>Aide</h2>
+    <div class="card"><div class="actions"><a class="btn" href="tutoriel.html">Tutoriel</a><a class="btn" href="accueil.html">Présentation de JamHit</a></div></div>
     <p class="muted">Version de l'application : ${esc(v)}</p>`;
 }
 const notFound = back => `<div class="empty">Élément introuvable. <a href="${back}">Retour</a></div>`;

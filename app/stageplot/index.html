@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Plan de scène — page de développement</title>
+<style>
+  /* Page hôte de développement : mêmes variables de thème que JamHit. */
+  :root {
+    color-scheme: dark;
+    --bg: #14111d; --card: #1f1b2c; --text: #eeeaf6; --muted: #a39db5; --line: #37314a;
+    --accent: #a586f5; --accent-text: #15101f; --soft: #2c2540; --danger: #ef7b6e;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .host-top { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; padding: .5rem .8rem; background: #1b1530; border-bottom: 1px solid var(--line); font-size: .85rem; }
+  .host-top b { font-size: 1rem; }
+  .host-top span { flex: 1 1 8rem; }
+  .host-top span { color: var(--muted); }
+  .host-btn { font: inherit; font-weight: 600; min-height: 40px; padding: .35rem .7rem; border-radius: 9px; border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; display: inline-flex; align-items: center; }
+  .host-btn input { display: none; }
+  main { padding: .7rem .8rem 1.5rem; max-width: 1500px; margin: 0 auto; }
+</style>
+<link rel="stylesheet" href="stageplot.css">
+</head>
+<body>
+<header class="host-top">
+  <b>Plan de scène</b>
+  <span id="host-info">Chargement…</span>
+  <label class="host-btn">Charger un export<input type="file" id="host-file" accept=".json,application/json"></label>
+  <button type="button" class="host-btn" id="host-demo">Exemple</button>
+  <button type="button" class="host-btn" id="host-reset">Effacer</button>
+</header>
+<main id="host-main"></main>
+<script src="stageplot.js"></script>
+<script>
+// Page hôte : fournit les données (StagePlot.setInput), reçoit les plans (StagePlot.onChange)
+// et les enregistre dans localStorage. Dans JamHit, ces deux points seront branchés sur l'état du groupe.
+(() => {
+  const KEY = 'stageplot:v1', KEY_IN = 'stageplot:input:v1';
+  const info = document.getElementById('host-info');
+  const read = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+  const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* stockage indisponible */ } };
+  const valid = d => d && d.format === 'stage-input' && Array.isArray(d.musicians);
+  const use = (d, src) => { StagePlot.setInput(d); info.textContent = (d.band && d.band.name ? d.band.name + ' · ' : '') + src; };
+  const demo = () => fetch('exemple-entree.json').then(r => r.json()).then(d => { use(d, 'données d\'exemple'); })
+    .catch(() => { info.textContent = 'Données d\'exemple illisibles ici (page ouverte en file://) : chargez un export JamHit.'; });
+
+  StagePlot.onChange = plans => write(KEY, plans);
+  StagePlot.setPlans(read(KEY) || []);
+  document.getElementById('host-main').innerHTML = StagePlot.view();
+  StagePlot.mount();
+
+  const saved = read(KEY_IN);
+  if (valid(saved)) use(saved, 'export chargé'); else demo();
+
+  document.getElementById('host-file').addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      let d = null;
+      try { d = JSON.parse(rd.result); } catch (x) { d = null; }
+      if (valid(d)) { write(KEY_IN, d); use(d, 'export chargé'); } else info.textContent = 'Fichier refusé : ce n\'est pas un export « stage-input ».';
+    };
+    rd.readAsText(f);
+    e.target.value = '';
+  });
+  document.getElementById('host-demo').addEventListener('click', () => { try { localStorage.removeItem(KEY_IN); } catch (e) { /* rien */ } demo(); });
+  document.getElementById('host-reset').addEventListener('click', () => {
+    if (!confirm('Effacer tous les plans enregistrés dans ce navigateur ?')) return;
+    try { localStorage.removeItem(KEY); } catch (e) { /* rien */ }
+    StagePlot.setPlans([]);
+  });
+})();
+</script>
+</body>
+</html>

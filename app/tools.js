@@ -8,7 +8,7 @@ const Tools = (() => {
   const KEY = 'dow:tools';
   let st = { key: 9, q: 'min', modes: false, mode: 0, pos: 0, deg: false, nums: true, caged: false, cq: '', blues: false, bpm: 100, snd: true, fl: false };
   try { Object.assign(st, JSON.parse(localStorage.getItem(KEY)) || {}); } catch { /* réglages par défaut */ }
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch { /* stockage indisponible */ } };
+  const saveSettings = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch { /* stockage indisponible */ } };
   let sub = '', full = false;
 
   // ====================== Métronome ======================
@@ -428,11 +428,11 @@ const Tools = (() => {
     else if (k === 'auto') { tnAuto = !tnAuto; tnWait = 0; tnChips(); tnIdle(); return; }
     else if (k === 'tone') { tnTone(); return; }
     else if (k === 's') { tnSel = +v; tnAuto = false; tnDone[tnSel] = false; tnWait = 0; tnHist = []; tnIn = 0; tnChips(); tnIdle(); return; }
-    save(); metroUI(); drawScales();
+    saveSettings(); metroUI(); drawScales();
   }
   document.addEventListener('click', e => { const b = e.target.closest('[data-tl]'); if (b) act(b.dataset.tl); });
-  document.addEventListener('input', e => { if (e.target.id === 'tl-rng') { setBpm(+e.target.value); save(); metroUI(); } });
-  document.addEventListener('change', e => { if (e.target.id === 'tl-song' && e.target.value) { setBpm(+e.target.value); save(); metroUI(); } });
+  document.addEventListener('input', e => { if (e.target.id === 'tl-rng') { setBpm(+e.target.value); saveSettings(); metroUI(); } });
+  document.addEventListener('change', e => { if (e.target.id === 'tl-song' && e.target.value) { setBpm(+e.target.value); saveSettings(); metroUI(); } });
   document.addEventListener('keydown', e => {
     if (sub !== 'scales' || !el('tl-board') || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || document.querySelector('dialog[open]')) return;
     if (e.key === 'ArrowLeft') act('k-'); else if (e.key === 'ArrowRight') act('k+'); else if (e.key === 'Escape' && full) act('h');
@@ -460,7 +460,8 @@ const Tools = (() => {
       // Plan de scène : données du groupe en lecture seule, plans enregistrés et synchronisés avec le reste.
       StagePlot.setInput(stageInput());
       StagePlot.setPlans(state.stagePlans);
-      StagePlot.onChange = plans => { state.stagePlans = plans; save(); };
+      // Enregistrement dans les données du groupe (save de app.js : stockage local + synchronisation), pas dans les réglages des outils.
+      StagePlot.onChange = plans => { state.stagePlans = plans; window.save(); };
       StagePlot.mount(decodeURIComponent(location.hash.split('/')[3] || ''));
     }
     if (s === 'scales') {

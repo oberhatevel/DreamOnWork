@@ -71,3 +71,10 @@ jobs:
           echo "::endgroup::"
           echo "::error::Envoi impossible en SFTP comme en FTPS : vérifier le serveur, l'identifiant et le mot de passe (onglet FTP-SSH d'OVH)."
           exit 1
+      - name: Vérifier le site en ligne
+        run: |
+          check() { code=$(curl -s -o /tmp/out -w '%{http_code}' -m 20 "$2" || true); echo "$1 : HTTP $code — $(head -c 160 /tmp/out | tr '\n' ' ')"; }
+          check "Accueil (attendu 200)" "https://jamhit.fr/"
+          check "API sans identifiants (attendu 400 bad_band : PHP et base joignables)" "https://jamhit.fr/api/index.php?a=ping"
+          check "Fichier de configuration (attendu : réponse vide)" "https://jamhit.fr/api/config.php"
+          check "Dossier des fichiers joints (attendu 403)" "https://jamhit.fr/api/files/.htaccess"

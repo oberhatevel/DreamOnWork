@@ -1,0 +1,331 @@
+{
+ "app": "jamhit",
+ "format": "stage-input",
+ "version": 1,
+ "exportedAt": "2026-11-13T12:00:00.000Z",
+ "band": {
+  "name": "Nova Station"
+ },
+ "musicians": [
+  {
+   "id": "d-lea",
+   "firstName": "Léa",
+   "instruments": [
+    "chant lead",
+    "chant",
+    "piano",
+    "tambourin"
+   ],
+   "guest": false,
+   "gear": [
+    {
+     "id": "g-lea-1",
+     "name": "Micro chant dynamique",
+     "type": "Micro",
+     "qty": 1,
+     "note": "XLR, avec pince"
+    },
+    {
+     "id": "g-lea-2",
+     "name": "Piano numérique 88 touches",
+     "type": "Clavier",
+     "qty": 1,
+     "note": "Sortie stéréo jack 6,35 · secteur"
+    },
+    {
+     "id": "g-lea-3",
+     "name": "Stand clavier en X",
+     "type": "Pied / support",
+     "qty": 1,
+     "note": ""
+    },
+    {
+     "id": "g-lea-4",
+     "name": "Tambourin",
+     "type": "Instrument",
+     "qty": 1,
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "d-tom",
+   "firstName": "Tom",
+   "instruments": [
+    "chant lead",
+    "chant",
+    "guitare acoustique",
+    "guitare électrique",
+    "harmonica"
+   ],
+   "guest": false,
+   "gear": [
+    {
+     "id": "g-tom-1",
+     "name": "Guitare folk électro-acoustique",
+     "type": "Instrument",
+     "qty": 1,
+     "note": "Sortie jack, passe par une DI"
+    },
+    {
+     "id": "g-tom-2",
+     "name": "Guitare électrique",
+     "type": "Instrument",
+     "qty": 1,
+     "note": ""
+    },
+    {
+     "id": "g-tom-3",
+     "name": "Ampli guitare 40 W",
+     "type": "Ampli",
+     "qty": 1,
+     "note": "Repiqué au micro · secteur"
+    },
+    {
+     "id": "g-tom-4",
+     "name": "Harmonicas (Do, Sol, La)",
+     "type": "Instrument",
+     "qty": 3,
+     "note": ""
+    },
+    {
+     "id": "g-tom-5",
+     "name": "Micro chant dynamique",
+     "type": "Micro",
+     "qty": 1,
+     "note": "XLR"
+    }
+   ]
+  },
+  {
+   "id": "d-ines",
+   "firstName": "Inès",
+   "instruments": [
+    "basse",
+    "chant"
+   ],
+   "guest": false,
+   "gear": [
+    {
+     "id": "g-ines-1",
+     "name": "Basse 4 cordes",
+     "type": "Instrument",
+     "qty": 1,
+     "note": ""
+    },
+    {
+     "id": "g-ines-2",
+     "name": "Ampli basse 200 W",
+     "type": "Ampli",
+     "qty": 1,
+     "note": "Sortie DI XLR · secteur"
+    },
+    {
+     "id": "g-ines-3",
+     "name": "Micro chant dynamique",
+     "type": "Micro",
+     "qty": 1,
+     "note": "XLR"
+    }
+   ]
+  },
+  {
+   "id": "d-marc",
+   "firstName": "Marc",
+   "instruments": [
+    "batterie"
+   ],
+   "guest": false,
+   "gear": [
+    {
+     "id": "g-marc-1",
+     "name": "Batterie 5 fûts",
+     "type": "Instrument",
+     "qty": 1,
+     "note": "Grosse caisse 22\", 2 toms, tom basse, caisse claire"
+    },
+    {
+     "id": "g-marc-2",
+     "name": "Cymbales (charley, crash, ride)",
+     "type": "Instrument",
+     "qty": 3,
+     "note": ""
+    },
+    {
+     "id": "g-marc-3",
+     "name": "Tapis de batterie",
+     "type": "Accessoire",
+     "qty": 1,
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "d-sam",
+   "firstName": "Sam",
+   "instruments": [
+    "guitare électrique",
+    "piano",
+    "chant"
+   ],
+   "guest": false,
+   "gear": [
+    {
+     "id": "g-sam-1",
+     "name": "Guitare électrique",
+     "type": "Instrument",
+     "qty": 1,
+     "note": ""
+    },
+    {
+     "id": "g-sam-2",
+     "name": "Ampli guitare 30 W à lampes",
+     "type": "Ampli",
+     "qty": 1,
+     "note": "Repiqué au micro · secteur"
+    },
+    {
+     "id": "g-sam-3",
+     "name": "Pédalier (overdrive, delay, wah)",
+     "type": "Pédales / effets",
+     "qty": 1,
+     "note": "Alimentation 9 V · secteur"
+    },
+    {
+     "id": "g-sam-4",
+     "name": "Micro chant dynamique",
+     "type": "Micro",
+     "qty": 1,
+     "note": "XLR"
+    }
+   ]
+  },
+  {
+   "id": "d-zoe",
+   "firstName": "Zoé",
+   "instruments": [
+    "saxophone"
+   ],
+   "guest": true,
+   "gear": [
+    {
+     "id": "g-zoe-1",
+     "name": "Saxophone alto",
+     "type": "Instrument",
+     "qty": 1,
+     "note": ""
+    },
+    {
+     "id": "g-zoe-2",
+     "name": "Micro pince pour saxophone",
+     "type": "Micro",
+     "qty": 1,
+     "note": "XLR, alimentation fantôme"
+    }
+   ]
+  }
+ ],
+ "commonGear": [
+  {
+   "id": "g-c-1",
+   "name": "Table de mixage 16 voies",
+   "type": "Table de mixage",
+   "qty": 1,
+   "note": "12 entrées micro XLR, 4 départs auxiliaires",
+   "owner": "groupe"
+  },
+  {
+   "id": "g-c-2",
+   "name": "Enceintes de façade amplifiées 12\"",
+   "type": "Sonorisation",
+   "qty": 2,
+   "note": "Sur pieds · secteur",
+   "owner": "groupe"
+  },
+  {
+   "id": "g-c-3",
+   "name": "Retours de scène amplifiés",
+   "type": "Retour",
+   "qty": 3,
+   "note": "Secteur",
+   "owner": "groupe"
+  },
+  {
+   "id": "g-c-4",
+   "name": "Pieds de micro perche",
+   "type": "Pied / support",
+   "qty": 5,
+   "note": "",
+   "owner": "groupe"
+  },
+  {
+   "id": "g-c-5",
+   "name": "Câbles XLR 10 m",
+   "type": "Câble",
+   "qty": 10,
+   "note": "",
+   "owner": "groupe"
+  },
+  {
+   "id": "g-c-6",
+   "name": "Boîtiers de direct (DI)",
+   "type": "Accessoire",
+   "qty": 3,
+   "note": "Pour la guitare folk et le piano",
+   "owner": "groupe"
+  },
+  {
+   "id": "g-c-7",
+   "name": "Micros batterie (kit 5 micros)",
+   "type": "Micro",
+   "qty": 1,
+   "note": "",
+   "owner": "location"
+  },
+  {
+   "id": "g-c-8",
+   "name": "Caisson de basses amplifié",
+   "type": "Sonorisation",
+   "qty": 1,
+   "note": "Pour les grandes salles",
+   "owner": "location"
+  },
+  {
+   "id": "g-c-9",
+   "name": "Projecteurs LED sur barre",
+   "type": "Éclairage",
+   "qty": 1,
+   "note": "",
+   "owner": "location"
+  }
+ ],
+ "sets": [
+  {
+   "id": "d-set-repet",
+   "name": "Répétition du jeudi",
+   "date": "2027-02-11",
+   "type": "repetition",
+   "musicianIds": [
+    "d-lea",
+    "d-tom",
+    "d-ines",
+    "d-marc",
+    "d-sam"
+   ]
+  },
+  {
+   "id": "d-set-concert",
+   "name": "Café des Arts",
+   "date": "2027-03-13",
+   "type": "live",
+   "musicianIds": [
+    "d-lea",
+    "d-tom",
+    "d-ines",
+    "d-marc",
+    "d-sam",
+    "d-zoe"
+   ]
+  }
+ ]
+}

@@ -109,3 +109,7 @@ section.steps-bg > .wrap > p.lead { color: #f1ece0; }
 .steps-bg .steps li { background: rgba(20, 17, 29, .62); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border-color: rgba(255, 214, 120, .25); }
 .steps-bg .steps li::before { background: #f5b531; color: #1d1608; }
 .steps-bg .steps span { color: #e4ded2; }
+
+/* Appels à l'action sous les rubriques */
+.section-cta { margin: 2rem 0 0; }
+.steps-bg .section-cta .btn.primary { background: #f5b531; border-color: #f5b531; color: #1d1608; }

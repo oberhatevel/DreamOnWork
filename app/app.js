@@ -180,10 +180,12 @@ function route() {
   return { page, id };
 }
 // Lien « Se connecter à mon groupe » de la page de présentation.
+// Liens de la page de présentation : app/#/join (se connecter) et app/#/create (créer son groupe).
 function openJoin() {
-  if (route().page !== 'join') return;
+  const pg = route().page;
+  if (pg !== 'join' && pg !== 'create') return;
   history.replaceState(null, '', '#/sets');
-  setTimeout(() => A.join(), 0);
+  setTimeout(() => (pg === 'join' ? A.join() : A['demo-start']()), 0);
 }
 function render() {
   const { page, id } = route();

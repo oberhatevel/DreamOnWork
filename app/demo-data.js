@@ -6,7 +6,8 @@ const DEMO = (() => {
   const avatar = (letter, color) => svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="${color}"/><text x="60" y="80" font-family="system-ui,sans-serif" font-size="64" font-weight="700" text-anchor="middle" fill="#fff">${letter}</text></svg>`);
   const day = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.toLocaleDateString('sv-SE'); };
   const yt = q => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
-  const M = (id, firstName, instruments, birthDate, color, guest = false) => ({ id, firstName, instruments, birthDate, photo: avatar(firstName[0], color), guest });
+  const G = (id, name, type, note = '', qty = 1, owner = 'groupe') => ({ id, name, type, qty, note, owner });
+  const M = (id, firstName, instruments, birthDate, color, gear, guest = false) => ({ id, firstName, instruments, birthDate, photo: avatar(firstName[0], color), guest, gear });
   const att = (id, label, url, date = '') => ({ id, label, date, url });
   // Morceau : rôles par défaut (Inès basse, Marc batterie) complétés par les parties de Léa, Tom et Sam.
   const song = (id, title, author, tempo, key, capo, lead, f) => ({
@@ -38,17 +39,21 @@ const DEMO = (() => {
   return () => ({
     version: 1, demo: true,
     band: {
+      gear: [G('g-c-1', 'Table de mixage 16 voies', 'Table de mixage', '12 entrées micro XLR, 4 départs auxiliaires'), G('g-c-2', 'Enceintes de façade amplifiées 12"', 'Sonorisation', 'Sur pieds · secteur', 2),
+        G('g-c-3', 'Retours de scène amplifiés', 'Retour', 'Secteur', 3), G('g-c-4', 'Pieds de micro perche', 'Pied / support', '', 5), G('g-c-5', 'Câbles XLR 10 m', 'Câble', '', 10),
+        G('g-c-6', 'Boîtiers de direct (DI)', 'Accessoire', 'Pour la guitare folk et le piano', 3), G('g-c-7', 'Micros batterie (kit 5 micros)', 'Micro', '', 1, 'location'), G('g-c-8', 'Caisson de basses amplifié', 'Sonorisation', 'Pour les grandes salles', 1, 'location'),
+        G('g-c-9', 'Projecteurs LED sur barre', 'Éclairage', '', 1, 'location')],
       name: 'Nova Station', website: 'https://nova-station.example', facebook: 'https://www.facebook.com/novastation.exemple', instagram: 'https://www.instagram.com/novastation.exemple', video: yt('concert rock live'),
       logo: svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset=".6" stop-color="#db2777"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs><rect width="200" height="200" rx="36" fill="url(#g)"/><text x="100" y="128" font-family="system-ui,sans-serif" font-size="92" font-weight="900" text-anchor="middle" fill="#fff">NS</text></svg>'),
       background: svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e1b4b"/><stop offset=".55" stop-color="#7c3aed"/><stop offset="1" stop-color="#db2777"/></linearGradient><radialGradient id="s" cx=".5" cy="0" r=".9"><stop offset="0" stop-color="#fde68a" stop-opacity=".55"/><stop offset="1" stop-color="#fde68a" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="800" fill="url(#g)"/><rect width="1200" height="800" fill="url(#s)"/><g fill="#fff" opacity=".12"><circle cx="220" cy="560" r="150"/><circle cx="620" cy="640" r="210"/><circle cx="1010" cy="540" r="170"/></g></svg>'),
     },
     musicians: [
-      M('d-lea', 'Léa', ['chant lead', 'chant', 'piano', 'tambourin'], '1992-04-18', '#db2777'),
-      M('d-tom', 'Tom', ['chant lead', 'chant', 'guitare acoustique', 'guitare électrique', 'harmonica'], '1988-09-02', '#7c3aed'),
-      M('d-ines', 'Inès', ['basse', 'chant'], '1995-01-27', '#0891b2'),
-      M('d-marc', 'Marc', ['batterie'], '1985-06-11', '#ca8a04'),
-      M('d-sam', 'Sam', ['guitare électrique', 'piano', 'chant'], '1990-11-30', '#16a34a'),
-      M('d-zoe', 'Zoé', ['saxophone'], '1997-03-08', '#ea580c', true),
+      M('d-lea', 'Léa', ['chant lead', 'chant', 'piano', 'tambourin'], '1992-04-18', '#db2777', [G('g-lea-1', 'Micro chant dynamique', 'Micro', 'XLR, avec pince'), G('g-lea-2', 'Piano numérique 88 touches', 'Clavier', 'Sortie stéréo jack 6,35 · secteur'), G('g-lea-3', 'Stand clavier en X', 'Pied / support'), G('g-lea-4', 'Tambourin', 'Instrument')]),
+      M('d-tom', 'Tom', ['chant lead', 'chant', 'guitare acoustique', 'guitare électrique', 'harmonica'], '1988-09-02', '#7c3aed', [G('g-tom-1', 'Guitare folk électro-acoustique', 'Instrument', 'Sortie jack, passe par une DI'), G('g-tom-2', 'Guitare électrique', 'Instrument'), G('g-tom-3', 'Ampli guitare 40 W', 'Ampli', 'Repiqué au micro · secteur'), G('g-tom-4', 'Harmonicas (Do, Sol, La)', 'Instrument', '', 3), G('g-tom-5', 'Micro chant dynamique', 'Micro', 'XLR')]),
+      M('d-ines', 'Inès', ['basse', 'chant'], '1995-01-27', '#0891b2', [G('g-ines-1', 'Basse 4 cordes', 'Instrument'), G('g-ines-2', 'Ampli basse 200 W', 'Ampli', 'Sortie DI XLR · secteur'), G('g-ines-3', 'Micro chant dynamique', 'Micro', 'XLR')]),
+      M('d-marc', 'Marc', ['batterie'], '1985-06-11', '#ca8a04', [G('g-marc-1', 'Batterie 5 fûts', 'Instrument', 'Grosse caisse 22", 2 toms, tom basse, caisse claire'), G('g-marc-2', 'Cymbales (charley, crash, ride)', 'Instrument', '', 3), G('g-marc-3', 'Tapis de batterie', 'Accessoire')]),
+      M('d-sam', 'Sam', ['guitare électrique', 'piano', 'chant'], '1990-11-30', '#16a34a', [G('g-sam-1', 'Guitare électrique', 'Instrument'), G('g-sam-2', 'Ampli guitare 30 W à lampes', 'Ampli', 'Repiqué au micro · secteur'), G('g-sam-3', 'Pédalier (overdrive, delay, wah)', 'Pédales / effets', 'Alimentation 9 V · secteur'), G('g-sam-4', 'Micro chant dynamique', 'Micro', 'XLR')]),
+      M('d-zoe', 'Zoé', ['saxophone'], '1997-03-08', '#ea580c', [G('g-zoe-1', 'Saxophone alto', 'Instrument'), G('g-zoe-2', 'Micro pince pour saxophone', 'Micro', 'XLR, alimentation fantôme')], true),
     ],
     songs: structuredClone(songs),
     sets: [

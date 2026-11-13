@@ -216,3 +216,10 @@ body.tl-full .tl-mini { position: fixed; bottom: calc(env(safe-area-inset-bottom
 body.tl-full #demo-banner { display: none; }
 #demo-banner .actions { justify-content: center; }
 #demo-banner .btn:not(.primary) { background: transparent; color: #fde68a; border-color: #8a6a2a; }
+
+/* Matériel des musiciens et matériel commun */
+.gear { margin-top: .7rem; padding-top: .6rem; border-top: 1px solid var(--line); }
+.card > .gear:only-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.gear-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; font-weight: 600; font-size: .9rem; margin-bottom: .3rem; }
+.gear .att { padding: .3rem 0; }
+.gear .badge { margin-left: .3rem; }

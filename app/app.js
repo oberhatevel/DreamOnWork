@@ -36,11 +36,18 @@ const BLANK_BAND = { name: '', logo: '', background: '', website: '', facebook: 
 function emptyState(name = '') { return normalize({ band: { name }, musicians: [], songs: [], sets: [] }); }
 // Affiches fournies autrefois avec l'application : ce sont maintenant des fichiers privés du groupe, sur le serveur.
 const LEGACY_POSTERS = { 'posters/les-smaart-2026-10-24.jpg': 'legacy-les-smaart', 'posters/le-muutch-2026-10-09.jpg': 'legacy-le-muutch' };
+// Matériel : celui d'un musicien (musician.gear) ou le matériel commun (band.gear, avec « au groupe » ou « à louer »).
+const GEAR_TYPES = ['Instrument', 'Ampli', 'Micro', 'Pédales / effets', 'Clavier', 'Sonorisation', 'Table de mixage', 'Retour', 'Pied / support', 'Câble', 'Éclairage', 'Accessoire', 'Autre'];
+const GEAR_OWN = { groupe: 'Au groupe', location: 'À louer' };
+function gearList(l) {
+  return (Array.isArray(l) ? l : []).map(g => ({ id: g.id || uid(), name: g.name || '', type: GEAR_TYPES.includes(g.type) ? g.type : 'Autre', qty: Math.max(1, parseInt(g.qty, 10) || 1), note: g.note || '', owner: g.owner === 'location' ? 'location' : 'groupe' }));
+}
 function normalize(d) {
   d = d && typeof d === 'object' ? d : {};
   const out = { version: 1, demo: !!d.demo, band: { ...BLANK_BAND, ...(d.band || {}) }, musicians: [], songs: [], sets: [] };
+  out.band.gear = gearList(out.band.gear);   // matériel commun du groupe
   for (const m of Array.isArray(d.musicians) ? d.musicians : [])
-    out.musicians.push({ id: m.id || uid(), firstName: m.firstName || '', instruments: Array.isArray(m.instruments) ? m.instruments : [], birthDate: m.birthDate || '', photo: m.photo || '', guest: !!m.guest });
+    out.musicians.push({ id: m.id || uid(), firstName: m.firstName || '', instruments: Array.isArray(m.instruments) ? m.instruments : [], birthDate: m.birthDate || '', photo: m.photo || '', guest: !!m.guest, gear: gearList(m.gear) });
   for (const x of Array.isArray(d.songs) ? d.songs : [])
     out.songs.push({ id: x.id || uid(), title: x.title || '', author: x.author || '', tempo: x.tempo || '', key: x.key || '', capo: x.capo || '', entryOrder: x.entryOrder || '', lead: x.lead || '', singer2: x.singer2 || '', solos: x.solos || '', remarks: x.remarks || '', parts: x.parts && typeof x.parts === 'object' ? x.parts : {}, videos: x.videos || [], scores: x.scores || [], recordings: x.recordings || [] });
   for (const x of Array.isArray(d.sets) ? d.sets : [])
@@ -289,7 +296,20 @@ function vSong(idq) {
 }
 
 // --- Musiciens
+// Liste de matériel d'un musicien (ref « mus:ID ») ou du groupe (ref « band »).
+const gearOwner = ref => ref === 'band' ? state.band : musician(ref.slice(4));
+function gearBlock(ref, list, common) {
+  const rows = list.map(g => `<div class="att"><div class="grow">
+      <b>${g.qty > 1 ? g.qty + ' × ' : ''}${esc(g.name)}</b> <span class="muted">· ${esc(g.type)}</span>
+      ${common ? `<span class="badge ${g.owner === 'location' ? 'live' : 'repetition'}">${GEAR_OWN[g.owner]}</span>` : ''}
+      ${g.note ? `<div class="muted">${esc(g.note)}</div>` : ''}</div>
+    <button class="icon" title="Modifier" data-act="gear-edit" data-ref="${ref}" data-id="${g.id}">✎</button>
+    <button class="icon" title="Supprimer" data-act="gear-del" data-ref="${ref}" data-id="${g.id}">🗑</button></div>`).join('');
+  return `<div class="gear"><div class="gear-head"><span>${common ? '' : 'Matériel'}${!common && list.length ? ` (${list.length})` : ''}</span><button class="btn small" data-act="gear-edit" data-ref="${ref}">+ Matériel</button></div>
+    ${rows || `<div class="muted">${common ? 'Aucun matériel commun pour le moment : sono, table de mixage, retours, éclairage…' : 'Aucun matériel renseigné.'}</div>`}</div>`;
+}
 function vMusicians() {
+  const common = state.band.gear, rent = common.filter(g => g.owner === 'location').length;
   return `<div class="head"><h1>Musiciens</h1><button class="btn primary" data-act="mus-edit">+ Nouveau musicien</button></div>
     ${state.musicians.map(m => `<div class="card"><div class="row">
       ${m.photo ? `<img class="avatar" src="${esc(m.photo)}" alt="">` : `<span class="avatar">${esc(m.firstName.slice(0, 1).toUpperCase())}</span>`}
@@ -298,8 +318,11 @@ function vMusicians() {
         ${m.birthDate ? `<div class="muted">🎂 ${esc(fmtDate(m.birthDate, true))}</div>` : ''}</div>
       <button class="icon" title="Modifier" data-act="mus-edit" data-id="${m.id}">✎</button>
       <button class="icon" title="Supprimer" data-act="mus-del" data-id="${m.id}">🗑</button>
-    </div></div>`).join('') || '<div class="empty">Aucun musicien.</div>'}
-    <p class="muted">Les musiciens « invités » ne sont pas présélectionnés dans les nouveaux sets.</p>`;
+    </div>${gearBlock('mus:' + m.id, m.gear)}</div>`).join('') || '<div class="empty">Aucun musicien.</div>'}
+    <p class="muted">Les musiciens « invités » ne sont pas présélectionnés dans les nouveaux sets.</p>
+    <h2>Matériel commun</h2>
+    <p class="muted">Sono, table de mixage, retours, éclairage… ${common.length ? `${common.length - rent} au groupe, ${rent} à louer.` : ''}</p>
+    <div class="card">${gearBlock('band', common, true)}</div>`;
 }
 
 // --- Groupe
@@ -340,6 +363,8 @@ function vData() {
       <button class="btn" data-act="exp-csv" data-id="songs">Morceaux (CSV)</button>
       <button class="btn" data-act="exp-csv" data-id="musicians">Musiciens (CSV)</button>
       <button class="btn" data-act="exp-csv" data-id="sets">Sets (CSV)</button>
+      <button class="btn" data-act="exp-csv" data-id="gear">Matériel (CSV)</button>
+      <button class="btn" data-act="exp-stage">Plan de scène (JSON)</button>
     </div><p class="muted">Le JSON contient tout (groupe, musiciens, morceaux, sets, photos, partitions, enregistrements). Les CSV s'ouvrent dans un tableur ; ils ne contiennent pas les fichiers joints.</p></div>
     <h2>Importer</h2>
     <div class="card"><button class="btn primary" data-act="imp">Choisir un fichier JSON ou CSV…</button>
@@ -521,7 +546,7 @@ const A = {
         ${m?.photo ? `<label class="check" style="margin-bottom:.7rem"><input type="checkbox" name="noPhoto"> Supprimer la photo actuelle</label><br>` : ''}
         <label class="check"><input type="checkbox" name="guest" ${m?.guest ? 'checked' : ''}> Musicien invité (non présélectionné dans les sets)</label>`,
       async onSubmit(fd) {
-        const t = m || { id: uid(), photo: '' };
+        const t = m || { id: uid(), photo: '', gear: [] };
         Object.assign(t, { firstName: fd.get('firstName').trim(), instruments: splitList(fd.get('instruments')), birthDate: fd.get('birthDate'), guest: fd.has('guest') });
         if (fd.has('noPhoto')) t.photo = '';
         if (fd.get('photo')?.size) t.photo = await resizeImage(fd.get('photo'), 400);
@@ -536,6 +561,31 @@ const A = {
     for (const s of state.sets) s.musicianIds = s.musicianIds.filter(id => id !== m.id);
     for (const x of state.songs) { delete x.parts[m.id]; if (x.lead === m.id) x.lead = ''; if (x.singer2 === m.id) x.singer2 = ''; }
     if (me === m.id) { me = ''; localStorage.removeItem('dow:me'); }
+    save(); render();
+  },
+
+  // Matériel (d'un musicien ou commun)
+  'gear-edit'(el) {
+    const { ref, id } = el.dataset, owner = gearOwner(ref), common = ref === 'band';
+    const g = owner.gear.find(x => x.id === id);
+    openDialog({
+      title: (g ? 'Modifier le matériel' : 'Ajouter du matériel') + (common ? ' commun' : ' — ' + owner.firstName),
+      body: `${field('Désignation', 'name', g?.name, `required placeholder="${common ? 'Ex. Table de mixage 12 voies' : 'Ex. Ampli guitare 40 W'}"`)}
+        <div class="grid2"><label class="f">Type<select name="type">${GEAR_TYPES.map(t => `<option ${t === (g?.type || (common ? 'Sonorisation' : 'Instrument')) ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+        ${field('Quantité', 'qty', g?.qty ?? 1, 'type="number" min="1" max="99" inputmode="numeric"')}</div>
+        ${common ? `<label class="f">Disponibilité<select name="owner">${Object.entries(GEAR_OWN).map(([k, v]) => `<option value="${k}" ${g?.owner === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>` : ''}
+        ${field('Précisions (marque, modèle, connectique, alimentation…)', 'note', g?.note)}`,
+      onSubmit(fd) {
+        const t = g || { id: uid() };
+        Object.assign(t, gearList([{ id: t.id, name: fd.get('name').trim(), type: fd.get('type'), qty: fd.get('qty'), note: fd.get('note').trim(), owner: fd.get('owner') || 'groupe' }])[0]);
+        if (!g) owner.gear.push(t);
+      },
+    });
+  },
+  'gear-del'(el) {
+    const owner = gearOwner(el.dataset.ref), g = owner.gear.find(x => x.id === el.dataset.id);
+    if (!confirm(`Supprimer « ${g.name} » ?`)) return;
+    owner.gear = owner.gear.filter(x => x !== g);
     save(); render();
   },
 
@@ -602,6 +652,17 @@ const A = {
   // Données
   'exp-json': exportJson,
   'exp-csv': el => exportCsv(el.dataset.id),
+  // Données utiles à un concepteur de plan de scène : groupe, musiciens, instruments, matériel, sets.
+  'exp-stage'() {
+    const gear = l => l.map(({ id, name, type, qty, note, owner }) => ({ id, name, type, qty, note, owner }));
+    download(`${slug()}-plan-de-scene-${today()}.json`, JSON.stringify({
+      app: 'jamhit', format: 'stage-input', version: 1, exportedAt: new Date().toISOString(),
+      band: { name: state.band.name },
+      musicians: state.musicians.map(m => ({ id: m.id, firstName: m.firstName, instruments: m.instruments, guest: m.guest, gear: gear(m.gear).map(({ owner, ...g }) => g) })),
+      commonGear: gear(state.band.gear),
+      sets: state.sets.map(s => ({ id: s.id, name: s.name, date: s.date, type: s.type, musicianIds: s.musicianIds })),
+    }, null, 1), 'application/json');
+  },
   imp: () => $('#import-file').click(),
   async 'sync-on'() {
     const name = $('#sync-band').value, code = $('#sync-code').value.trim();
@@ -756,6 +817,12 @@ const CSV = {
     file: 'musiciens',
     head: () => ['id', 'Prénom', 'Instruments', 'Date de naissance', 'Invité'],
     rows: () => state.musicians.map(m => [m.id, m.firstName, m.instruments.join(', '), m.birthDate, m.guest ? 'oui' : 'non']),
+  },
+  gear: {
+    file: 'materiel',
+    head: () => ['Propriétaire', 'Désignation', 'Type', 'Quantité', 'Disponibilité', 'Précisions'],
+    rows: () => [...state.musicians.flatMap(m => m.gear.map(g => [m.firstName, g.name, g.type, g.qty, 'Personnel', g.note])),
+      ...state.band.gear.map(g => ['Groupe', g.name, g.type, g.qty, GEAR_OWN[g.owner], g.note])],
   },
   sets: {
     file: 'sets',

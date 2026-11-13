@@ -39,6 +39,8 @@ section > .wrap > p.lead { color: var(--muted); margin: 0 0 1.6rem; max-width: 4
 .card h3 { margin: .3rem 0 .3rem; font-size: 1.08rem; }
 .card p { margin: 0; color: var(--muted); font-size: .97rem; }
 .card .ico { font-size: 1.7rem; line-height: 1; }
+.picto { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #713BFF, #F01486); display: flex; align-items: center; justify-content: center; margin-bottom: .7rem; }
+.picto img { width: 80%; height: 80%; object-fit: contain; }
 .steps { counter-reset: s; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 0; margin: 0; list-style: none; }
 .steps li { counter-increment: s; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 1.1rem 1.2rem; }
 .steps li::before { content: counter(s); display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-weight: 800; margin-bottom: .5rem; }
@@ -65,7 +67,7 @@ kbd { background: var(--soft); border: 1px solid var(--line); border-radius: 6px
 
 @media (max-width: 800px) {
   .hero { grid-template-columns: 1fr; padding-top: 1.2rem; gap: 1.8rem; }
-  .nav nav a:not(.btn), .nav nav .btn.primary { display: none; }   /* sur téléphone : seul l'accès au groupe reste dans l'en-tête */
+  .nav nav a:not(.btn) { display: none; }   /* sur téléphone : seuls Connexion et Démo restent dans l'en-tête */
   .grid, .steps { grid-template-columns: 1fr; }
   .doc { grid-template-columns: 1fr; gap: 1rem; }
   .toc { position: static; background: var(--soft); border-radius: 12px; padding: .8rem 1rem; }

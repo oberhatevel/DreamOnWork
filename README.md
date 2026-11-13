@@ -10,6 +10,12 @@ morceaux, musiciens, groupe et sets, avec édition d'une fiche PDF par musicien.
   Partage entre musiciens par export / import **JSON** (complet, fichiers inclus) ou **CSV** (morceaux, musiciens, sets).
 - **PDF** : dans un set, bouton « PDF » → choisir le musicien → « Enregistrer au format PDF » dans la fenêtre d'impression.
 
+## Matériel et plan de scène
+
+- Onglet Musiciens : matériel de chaque musicien (`musician.gear`) et matériel commun du groupe (`band.gear`, « au groupe » ou « à louer »).
+- `docs/plan-de-scene/` : cahier des charges, prompt de démarrage et données d'exemple pour un concepteur de plan de scène développé dans un projet séparé
+  (non publié sur le site). L'application exporte les données utiles depuis Données → « Plan de scène (JSON) ».
+
 ## Données de départ
 
 Au premier lancement, l'application affiche un groupe de démonstration fictif (`app/demo-data.js`, « Nova Station »).

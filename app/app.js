@@ -34,6 +34,8 @@ function seed() { return normalize(DEMO()); }
 const BLANK_BAND = { name: '', logo: '', background: '', website: '', facebook: '', instagram: '', video: '' };
 // Groupe vide, pour démarrer son propre groupe à la place de la démonstration.
 function emptyState(name = '') { return normalize({ band: { name }, musicians: [], songs: [], sets: [] }); }
+// Affiches fournies autrefois avec l'application : ce sont maintenant des fichiers privés du groupe, sur le serveur.
+const LEGACY_POSTERS = { 'posters/les-smaart-2026-10-24.jpg': 'legacy-les-smaart', 'posters/le-muutch-2026-10-09.jpg': 'legacy-le-muutch' };
 function normalize(d) {
   d = d && typeof d === 'object' ? d : {};
   const out = { version: 1, demo: !!d.demo, band: { ...BLANK_BAND, ...(d.band || {}) }, musicians: [], songs: [], sets: [] };
@@ -42,7 +44,7 @@ function normalize(d) {
   for (const x of Array.isArray(d.songs) ? d.songs : [])
     out.songs.push({ id: x.id || uid(), title: x.title || '', author: x.author || '', tempo: x.tempo || '', key: x.key || '', capo: x.capo || '', entryOrder: x.entryOrder || '', lead: x.lead || '', singer2: x.singer2 || '', solos: x.solos || '', remarks: x.remarks || '', parts: x.parts && typeof x.parts === 'object' ? x.parts : {}, videos: x.videos || [], scores: x.scores || [], recordings: x.recordings || [] });
   for (const x of Array.isArray(d.sets) ? d.sets : [])
-    out.sets.push({ id: x.id || uid(), name: x.name || '', date: x.date || '', type: x.type === 'live' ? 'live' : 'repetition', musicianIds: x.musicianIds || [], songIds: x.songIds || [], remarks: x.remarks || '', posterId: x.posterId || '', posterUrl: /^posters\/[\w.-]+$/.test(x.posterUrl || '') ? x.posterUrl : '', recordings: x.recordings || [], photos: x.photos || [] });
+    out.sets.push({ id: x.id || uid(), name: x.name || '', date: x.date || '', type: x.type === 'live' ? 'live' : 'repetition', musicianIds: x.musicianIds || [], songIds: x.songIds || [], remarks: x.remarks || '', posterId: x.posterId || LEGACY_POSTERS[x.posterUrl] || '', posterUrl: /^posters\/demo-[\w.-]+$/.test(x.posterUrl || '') ? x.posterUrl : '', recordings: x.recordings || [], photos: x.photos || [] });
   return out;
 }
 let state;
@@ -325,9 +327,9 @@ function vData() {
       <p>Groupe : <b>${esc(Sync.band)}</b></p>
       <p class="muted" id="sync-status">${esc(Sync.label())}</p>
       <div class="actions"><button class="btn primary" data-act="sync-now">Synchroniser maintenant</button>
-        <button class="btn" data-act="sync-off">Déconnecter cet appareil</button></div>
-      <p class="muted">Les changements de cet appareil sont envoyés au serveur et ceux des autres musiciens reçus automatiquement. Si une même fiche est modifiée sur deux appareils, la modification la plus récente est conservée.</p>` : `
-      <p class="muted">Partagez les données entre les appareils du groupe et sauvegardez-les sur le serveur. Tous les musiciens saisissent le même nom de groupe et le même code d'accès.</p>
+        <button class="btn danger" data-act="logout">Se déconnecter du groupe</button></div>
+      <p class="muted">La synchronisation est automatique : vos changements partent au serveur et ceux des autres musiciens arrivent tout seuls. Sans réseau (salle de répétition, scène), l'application continue de fonctionner et tout repart au retour de la connexion. Si une même fiche est modifiée sur deux appareils, la modification la plus récente est conservée.</p>` : `
+      <p class="muted">Cet appareil n'est relié à aucun groupe en ligne : ses données ne sont ni partagées ni sauvegardées sur le serveur. Saisissez le nom du groupe et son code d'accès pour le connecter (le groupe est créé s'il n'existe pas encore).</p>
       <div class="grid2">${field('Nom du groupe', 'sync-band', Sync.slugify(state.band.name), 'id="sync-band" autocapitalize="none" autocomplete="off"')}
       ${field("Code d'accès (4 caractères au moins)", 'sync-code', '', 'id="sync-code" autocapitalize="none" autocomplete="off"')}</div>
       <button class="btn primary" data-act="sync-on">Connecter cet appareil</button>
@@ -350,8 +352,8 @@ function vData() {
 }
 // Connecte l'appareil à un groupe. La démonstration n'est jamais envoyée au serveur :
 // on repart d'un groupe vide (groupe nouvellement créé) ou des données du serveur.
-function connectGroup(name, code, joinOnly) {
-  return Sync.connect(name, code, res => { if (state.demo) { state = emptyState(res.created ? name.trim() : ''); persist(); } }, joinOnly);
+function connectGroup(name, code, mode) {
+  return Sync.connect(name, code, res => { if (state.demo) { state = emptyState(res.created ? name.trim() : ''); persist(); } }, mode);
 }
 const notFound = back => `<div class="empty">Élément introuvable. <a href="${back}">Retour</a></div>`;
 
@@ -606,7 +608,7 @@ const A = {
     $('#sync-status').textContent = 'Connexion…';
     try {
       if (state.demo && !confirm('Les données de démonstration (groupe fictif Nova Station) seront retirées de cet appareil avant la connexion. Continuer ?')) { $('#sync-status').textContent = ''; return; }
-      const r = await connectGroup(name, code, false);
+      const r = await connectGroup(name, code, '');
       render();
       alert(r.created ? 'Groupe créé sur le serveur : cet appareil y envoie ses données.\nDonnez le nom du groupe et le code aux autres musiciens.'
         : 'Appareil connecté au groupe : ses données arrivent du serveur.\nSi cet appareil contenait déjà des fiches à vous, celles du serveur les remplacent et celles qui n\'existent qu\'ici sont envoyées.');
@@ -623,7 +625,7 @@ const A = {
         <p class="muted" id="join-status"></p>`,
       async onSubmit(fd) {
         $('#join-status').textContent = 'Connexion…';
-        try { await connectGroup(fd.get('band'), fd.get('code').trim(), true); }
+        try { await connectGroup(fd.get('band'), fd.get('code').trim(), 'join'); }
         catch (e) { $('#join-status').textContent = 'Connexion impossible : ' + e.message; return false; }
         location.hash = '#/sets';
       },
@@ -632,19 +634,34 @@ const A = {
   'sync-now': () => Sync.run(),
   'demo-start'() {
     openDialog({
-      title: 'Créer mon groupe', ok: 'Créer',
-      body: `<p>Les données de démonstration (groupe fictif Nova Station) seront retirées de cet appareil et vous partirez d'un groupe vide.</p>
-        ${field('Nom de votre groupe', 'name', '', 'required')}
-        <p class="muted">Votre groupe existe déjà sur un autre appareil ? Utilisez plutôt « Synchronisation en ligne » dans l'onglet Données pour récupérer ses données.</p>`,
-      onSubmit(fd) { state = emptyState(fd.get('name').trim()); location.hash = '#/band'; },
+      title: 'Créer mon groupe', ok: 'Créer le groupe',
+      body: `<p class="muted">Le groupe est créé en ligne : ses données sont synchronisées automatiquement entre tous les appareils connectés, et restent utilisables sans réseau.${state.demo ? ' La démonstration est retirée de cet appareil.' : ''}</p>
+        ${field('Nom de votre groupe', 'band', '', 'required autocomplete="off"')}
+        ${field("Code d'accès à donner aux musiciens (4 caractères au moins)", 'code', '', 'required minlength="4" autocapitalize="none" autocomplete="off"')}
+        <p class="muted" id="join-status"></p>`,
+      async onSubmit(fd) {
+        $('#join-status').textContent = 'Création…';
+        try { await connectGroup(fd.get('band'), fd.get('code').trim(), 'create'); }
+        catch (e) { $('#join-status').textContent = 'Création impossible : ' + (e.offline ? "pas de réseau. Il faut être connecté à Internet pour créer le groupe." : e.message); return false; }
+        location.hash = '#/band';
+      },
     });
   },
-  'sync-off'() {
-    if (!confirm('Déconnecter cet appareil ? Ses données restent sur l\'appareil et sur le serveur, mais ne seront plus échangées.')) return;
-    Sync.disconnect(); render();
+  // Déconnexion : les données du groupe quittent cet appareil (elles restent sur le serveur), retour à la démonstration.
+  async logout() {
+    if (!Sync.enabled()) return;
+    if (navigator.onLine) { await Sync.run(); await new Promise(r => setTimeout(r, 300)); }
+    const n = Sync.pending();
+    const warn = n ? `ATTENTION : ${n} fiche(s) modifiée(s) sur cet appareil n'ont pas pu être envoyées au serveur (pas de réseau ?) et seront perdues.\n\n` : '';
+    if (!confirm(warn + `Se déconnecter du groupe « ${Sync.band} » ?\nSes données sont retirées de cet appareil et restent sur le serveur : vous les retrouverez en vous reconnectant avec le nom du groupe et le code d'accès.`)) return;
+    Sync.disconnect();
+    await fileClear(); urlCache.clear();
+    localStorage.removeItem('dow:me'); me = '';
+    state = seed(); persist();
+    location.hash = '#/sets'; render();
   },
   async reset() {
-    if (!confirm('Effacer toutes les données de cet appareil et revenir au groupe de démonstration ? Pensez à exporter avant.' + (Sync.enabled() ? '\nL\'appareil sera déconnecté de la synchronisation ; les données du serveur ne sont pas effacées.' : ''))) return;
+    if (!confirm('Effacer toutes les données de cet appareil et revenir au groupe de démonstration ? Pensez à exporter avant.' + (Sync.enabled() ? '\nL\'appareil sera déconnecté du groupe ; les données du serveur ne sont pas effacées.' : ''))) return;
     Sync.disconnect();
     await fileClear(); urlCache.clear();
     state = seed(); save(); render();
@@ -869,23 +886,6 @@ $('#import-file').addEventListener('change', async e => {
 const offline = () => { $('#offline').hidden = navigator.onLine; };
 addEventListener('online', offline); addEventListener('offline', offline); offline();
 dlg.addEventListener('close', () => { if (Sync.enabled()) setTimeout(() => { render(); Sync.run(); }, 0); });
-// Affiches autrefois fournies avec l'application (hors démonstration) : copiées dans les fichiers de l'appareil,
-// pour qu'elles suivent la synchronisation et ne dépendent plus d'un fichier du site.
-(async () => {
-  if (state.demo) return;
-  let changed = false;
-  for (const s of state.sets) {
-    if (!s.posterUrl || s.posterId) continue;
-    try {
-      const res = await fetch(s.posterUrl);
-      if (!res.ok) continue;
-      const id = uid();
-      await filePut(id, await res.blob());
-      s.posterId = id; s.posterUrl = ''; changed = true;
-    } catch { /* hors ligne : nouvel essai au prochain lancement */ }
-  }
-  if (changed) { save(); render(); }
-})();
 Sync.start();
 if (!location.hash) history.replaceState(null, '', '#/sets');
 openJoin();

@@ -53,6 +53,10 @@ if (!$band && !empty($_GET['nocreate'])) {
     // Connexion à un groupe existant : une faute de frappe dans le nom ne doit pas créer un groupe vide.
     fail('no_band', 404, "Aucun groupe de ce nom sur le serveur. Vérifiez l'orthographe, ou créez le groupe depuis l'onglet Données.");
 }
+if ($band && !empty($_GET['mustcreate'])) {
+    // Création d'un groupe : le nom doit être libre.
+    fail('exists', 409, 'Ce nom de groupe est déjà utilisé. Choisissez-en un autre, ou utilisez « Se connecter à mon groupe ».');
+}
 if (!$band) {
     // Premier appareil à utiliser ce nom de groupe : il en fixe le code d'accès.
     try { q($db, 'INSERT INTO dow_bands (slug, code_hash, rev, created) VALUES (?, ?, 0, ?)', [$slug, password_hash($code, PASSWORD_DEFAULT), now_ms()]); $created = true; }
@@ -116,7 +120,9 @@ if ($action === 'file') {
     $path = $dir . '/' . $id;
     if ($method === 'HEAD' || $method === 'GET') {
         $row = q($db, 'SELECT mime, size FROM dow_files WHERE band = ? AND id = ?', [$slug, $id])->fetch();
-        if (!$row || !is_file($path)) fail('not_found', 404, 'Fichier absent du serveur.');
+        if (!is_file($path)) fail('not_found', 404, 'Fichier absent du serveur.');
+        // Fichier déposé directement dans le dossier du groupe (sans passer par l'application) : type déduit du contenu.
+        if (!$row) $row = ['mime' => (function_exists('mime_content_type') ? (mime_content_type($path) ?: '') : '') ?: 'application/octet-stream'];
         if ($method === 'HEAD') { http_response_code(200); exit; }
         $mime = preg_match('#^[\w.+-]+/[\w.+-]+$#', $row['mime']) ? $row['mime'] : 'application/octet-stream';
         header('Content-Type: ' . $mime);

@@ -58,7 +58,7 @@ jobs:
           # Envoi dans www/ (racine du site). Aucun fichier distant n'est supprimé.
           COMMON="set net:max-retries 2; set net:timeout 15; set net:reconnect-interval-base 5; set cmd:fail-exit yes; debug 3;"
           # Anciens fichiers de l'application à la racine (elle est maintenant dans app/) : retirés pour ne laisser aucune copie périmée.
-          OLD="rm -f www/app.js www/sync.js www/seed-songs.js www/style.css www/sw.js www/manifest.webmanifest www/accueil.html www/icon.svg www/icon-192.png www/icon-512.png; rm -rf www/posters;"
+          OLD="rm -f www/app.js www/sync.js www/seed-songs.js www/style.css www/sw.js www/manifest.webmanifest www/accueil.html www/icon.svg www/icon-192.png www/icon-512.png; rm -rf www/posters; rm -f www/app/seed-songs.js www/app/posters/les-smaart-2026-10-24.jpg www/app/posters/le-muutch-2026-10-09.jpg;"
           MIRROR="mirror --reverse --only-newer --no-perms --verbose dist www; set cmd:fail-exit no; $OLD bye"
           echo "::group::Essai SFTP (port 22)"
           if timeout 150 lftp -e "$COMMON set sftp:auto-confirm yes; open --env-password -u $USER_ sftp://$HOST; $MIRROR" < /dev/null; then

@@ -67,7 +67,7 @@ const Sync = (() => {
   function label() {
     const when = cfg.lastOk ? new Date(cfg.lastOk).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
     return { off: 'Non connecté.', sync: 'Synchronisation en cours…', ok: `Synchronisé (${when}).`, idle: when ? `Dernière synchronisation : ${when}.` : 'En attente de synchronisation.',
-      offline: `Hors ligne${when ? ` — dernière synchronisation : ${when}` : ''}. Les changements partiront au retour du réseau.`, error: `Erreur : ${message}` }[status] || '';
+      offline: `Hors ligne${when ? ` — dernière synchronisation : ${when}` : ''}. Vous pouvez continuer à travailler : les changements partiront au retour du réseau.`, error: `Erreur : ${message}` }[status] || '';
   }
 
   // Applique au stockage local une fiche reçue du serveur. Renvoie vrai si quelque chose a changé.
@@ -186,11 +186,12 @@ const Sync = (() => {
   // Appelé à chaque enregistrement local.
   function changed(touch = true) { if (!enabled()) return; stamp(touch); schedule(2000); }
 
-  async function connect(name, code, prepare, joinOnly = false) {
+  // mode : 'join' (le groupe doit exister), 'create' (le nom doit être libre) ou '' (l'un ou l'autre).
+  async function connect(name, code, prepare, mode = '') {
     const band = slugify(name);
     if (band.length < 2) throw new Error('Indiquez le nom du groupe (au moins 2 lettres ou chiffres).');
     if (code.length < 4) throw new Error("Le code d'accès doit comporter au moins 4 caractères.");
-    const res = await api(joinOnly ? 'ping&nocreate=1' : 'ping', { creds: { band, code } });
+    const res = await api('ping' + (mode === 'join' ? '&nocreate=1' : mode === 'create' ? '&mustcreate=1' : ''), { creds: { band, code } });
     if (prepare) prepare(res);          // dernier réglage des données locales avant le premier échange
     cfg = { band, code, lastRev: 0, docs: {}, seen: {}, mt: {}, files: {}, lastOk: 0 };
     store(); setStatus('idle');
@@ -205,5 +206,13 @@ const Sync = (() => {
     addEventListener('offline', () => enabled() && setStatus('offline'));
     document.addEventListener('visibilitychange', () => { if (!document.hidden) schedule(500); });
   }
-  return { enabled, changed, run, connect, disconnect, download, start, label, slugify, get band() { return cfg.band || ''; } };
+  // Nombre de fiches modifiées sur cet appareil et pas encore envoyées au serveur.
+  function pending() {
+    if (!enabled()) return 0;
+    const local = localDocs(); let n = 0;
+    for (const [k, j] of local) if (cfg.docs[k]?.h !== hash(j)) n++;
+    for (const k of Object.keys(cfg.docs)) if (!local.has(k) && cfg.docs[k].h !== '-') n++;
+    return n;
+  }
+  return { enabled, changed, run, connect, disconnect, download, start, label, slugify, pending, get band() { return cfg.band || ''; }, get status() { return status; } };
 })();

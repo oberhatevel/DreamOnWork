@@ -72,3 +72,10 @@ kbd { background: var(--soft); border: 1px solid var(--line); border-radius: 6px
   .doc { grid-template-columns: 1fr; gap: 1rem; }
   .toc { position: static; background: var(--soft); border-radius: 12px; padding: .8rem 1rem; }
 }
+
+/* Cartes illustrées d'une photo (section « Vos données ») */
+.card-photo { padding: 0; overflow: hidden; }
+.card-photo .card-img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.card-photo h3, .card-photo p { padding: 0 1.2rem; }
+.card-photo h3 { margin-top: .9rem; }
+.card-photo p { padding-bottom: 1.1rem; }

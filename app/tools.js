@@ -79,16 +79,19 @@ const Tools = (() => {
   // ====================== Accordeur ======================
   // Micro + détection de hauteur YIN, aiguille ±50 cents, note de référence (Web Audio).
   const TS = [['E', 2, 82.41, 6], ['A', 2, 110, 5], ['D', 3, 146.83, 4], ['G', 3, 196, 3], ['B', 3, 246.94, 2], ['E', 4, 329.63, 1]];
-  let tnBytes = null, tnHeard = 0;
+  let tnBytes = null, tnHeard = 0, tnQ = 0, tnRaw = 0;
   let tnOn = false, tnAuto = true, tnSel = 0, tnDone = [], tnCtx = null, tnStream = null, tnAn = null, tnBuf = null, tnRaf = 0, tnLast = 0, tnHist = [], tnIn = 0, tnSil = 0, tnTc = null, tnOsc = null, tnTimer = null;
   function yin(buf, sr) {
     const W = 2048, tmin = Math.max(2, Math.floor(sr / 400)), tmax = Math.min(Math.floor(sr / 60), buf.length - W - 1);
-    let r = 0; for (let i = 0; i < W; i++) r += buf[i] * buf[i]; if (Math.sqrt(r / W) < 0.002) return -1;   // seuil bas : micros de tablette peu sensibles
+    let r = 0, m0 = 0; for (let i = 0; i < W; i++) m0 += buf[i]; m0 /= W;
+    for (let i = 0; i < W; i++) r += (buf[i] - m0) ** 2;
+    if (Math.sqrt(r / W) < 0.0006) { tnQ = 0; return -1; }   // seuil bas : micros de tablette peu sensibles
     const d = new Float32Array(tmax + 2); let acc = 0; d[0] = 1;
     for (let t = 1; t <= tmax; t++) { let s = 0; for (let j = 0; j < W; j++) { const x = buf[j] - buf[j + t]; s += x * x; } acc += s; d[t] = acc ? s * t / acc : 1; }
     let t = -1;
-    for (let k = tmin; k < tmax; k++) if (d[k] < 0.15) { while (k + 1 < tmax && d[k + 1] < d[k]) k++; t = k; break; }
-    if (t < 0) { let m = tmin; for (let k = tmin; k < tmax; k++) if (d[k] < d[m]) m = k; if (d[m] > 0.3) return -1; t = m; }
+    for (let k = tmin; k < tmax; k++) if (d[k] < 0.2) { while (k + 1 < tmax && d[k + 1] < d[k]) k++; t = k; break; }
+    if (t < 0) { let m = tmin; for (let k = tmin; k < tmax; k++) if (d[k] < d[m]) m = k; tnQ = Math.max(0, 1 - d[m]); if (d[m] > 0.45) return -1; t = m; }
+    tnQ = Math.max(0, 1 - d[t]);
     const a = d[t - 1], b = d[t], c = d[t + 1], den = a - 2 * b + c;
     return sr / (den ? t + (a - c) / (2 * den) : t);
   }
@@ -142,8 +145,10 @@ const Tools = (() => {
     if (lv > 0.0005) tnHeard = now; else if (now - tnHeard > 4000) tnMsg('Le micro ne capte aucun son. Vérifiez que le micro de l’appareil n’est pas couvert, ou que le bon micro est autorisé pour ce site.');
     if (lv > 0.0005 && el('tl-msg') && /ne capte aucun son|en pause/.test(el('tl-msg').textContent)) tnMsg('');
     const f = yin(tnBuf, tnCtx.sampleRate);
+    const dg = el('tl-diag');
+    if (dg) dg.textContent = `Mesure : ${f > 0 ? f.toFixed(1) + ' Hz' : '—'} · fiabilité ${Math.round(tnQ * 100)} % · ${Math.round(tnCtx.sampleRate / 100) / 10} kHz`;
     if (f > 0) { tnSil = 0; tnHist.push(f); if (tnHist.length > 5) tnHist.shift(); const s = [...tnHist].sort((x, y) => x - y); tnUpdate(s[s.length >> 1]); }
-    else if (++tnSil > 10 && tnHist.length) { tnHist = []; tnIn = 0; tnIdle(); }
+    else if (++tnSil > 40 && tnHist.length) { tnHist = []; tnIn = 0; tnIdle(); }   // dernière note affichée 2 s après la fin du son
   }
   const tnMsg = t => { const m = el('tl-msg'); if (m && m.textContent !== t) m.textContent = t; };
   function tnStart() {
@@ -157,11 +162,18 @@ const Tools = (() => {
       .then(stream => {
         if (!tnCtx) { stream.getTracks().forEach(t => t.stop()); return; }
         tnStream = stream;
+        const tr = stream.getAudioTracks()[0], rate = tr && tr.getSettings ? tr.getSettings().sampleRate : 0;
+        if (rate && Math.abs(rate - tnCtx.sampleRate) > 1) {
+          // Contexte recréé à la fréquence du micro (sinon Safari déforme le son) ; il reprend au premier toucher si besoin.
+          try { tnCtx.close().catch(() => {}); tnCtx = new C({ sampleRate: rate }); tnCtx.resume().catch(() => {}); } catch { /* on garde l'ancien */ }
+        }
         tnAn = tnCtx.createAnalyser(); tnAn.fftSize = 4096; tnBuf = new Float32Array(tnAn.fftSize); tnBytes = null;
         const src = tnCtx.createMediaStreamSource(stream), mute = tnCtx.createGain();
         mute.gain.value = 0;
         // Safari ne traite le son que si la chaîne aboutit à la sortie : on la relie, volume à zéro.
-        src.connect(tnAn); tnAn.connect(mute); mute.connect(tnCtx.destination);
+        const hp = tnCtx.createBiquadFilter(), lp = tnCtx.createBiquadFilter();
+        hp.type = 'highpass'; hp.frequency.value = 50; lp.type = 'lowpass'; lp.frequency.value = 1200;
+        src.connect(hp); hp.connect(lp); lp.connect(tnAn); tnAn.connect(mute); mute.connect(tnCtx.destination);
         tnCtx.resume().catch(() => {});
         tnOn = true; tnHeard = performance.now(); tnMsg(''); tnChips(); tnIdle();
         cancelAnimationFrame(tnRaf); tnRaf = requestAnimationFrame(tnLoop);
@@ -173,6 +185,7 @@ const Tools = (() => {
     if (tnStream) tnStream.getTracks().forEach(t => t.stop()); tnStream = null;
     if (tnCtx) tnCtx.close().catch(() => {}); tnCtx = null; tnAn = null;
     const bar = el('tl-level'); if (bar) bar.style.width = '0';
+    const dg = el('tl-diag'); if (dg) dg.textContent = '';
     tnChips(); tnIdle();
   }
   function tnToneStop() {
@@ -199,6 +212,7 @@ const Tools = (() => {
       <div class="tl-meter"><i class="z"></i><i class="needle" id="tl-needle"></i><span class="l">♭</span><span class="r">♯</span></div>
       <div class="tl-stat" id="tl-stat" aria-live="polite"></div>
       <div class="tl-lv" title="Niveau du micro"><span>Micro</span><i><b id="tl-level"></b></i></div>
+      <small class="muted tl-diag" id="tl-diag"></small>
       <div class="tl-ctl"><button class="tl-b" data-tl="mic" id="tl-mic"></button><button class="tl-b" data-tl="auto" id="tl-auto"></button><button class="tl-b" data-tl="tone" id="tl-tone">🔊 Note de référence</button></div>
       <small class="muted" id="tl-msg"></small>
       <p class="muted">Accordage standard (Mi La Ré Sol Si Mi). En mode Auto, la corde la plus proche de la note jouée est choisie toute seule ; une corde tenue juste environ une seconde reçoit un ✓.</p>

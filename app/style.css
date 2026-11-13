@@ -228,3 +228,4 @@ body.tl-full #demo-banner { display: none; }
 .tl-lv { display: flex; align-items: center; gap: .5rem; font-size: .78rem; color: var(--muted); }
 .tl-lv i { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .tl-lv b { display: block; height: 100%; width: 0; background: #22c55e; transition: width .08s linear; }
+.tl-diag { text-align: center; font-size: .72rem; min-height: 1em; font-variant-numeric: tabular-nums; }

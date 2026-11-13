@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Numéro de version (pour que les navigateurs chargent la mise à jour)
-        run: sed -i "s/__V__/${GITHUB_SHA::7}/g" app/index.html app/sw.js
+        run: sed -i "s/__V__/${GITHUB_SHA::7}/g" app/index.html app/sw.js index.html tutoriel.html site/site.css
       - name: Envoyer les fichiers sur l'hébergement
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
@@ -78,6 +78,9 @@ jobs:
           check() { code=$(curl -s -o /tmp/out -w '%{http_code}' -m 20 "$2" || true); echo "$1 : HTTP $code — $(head -c 160 /tmp/out | tr '\n' ' ')"; }
           check "Présentation (attendu 200)" "https://jamhit.fr/"
           check "Application (attendu 200)" "https://jamhit.fr/app/"
+          check "Photo « Comment ça marche » (attendu 200)" "https://jamhit.fr/site/pictos/public-scene.jpg"
+          check "Feuille de style en ligne (doit citer public-scene.jpg?v=)" "https://jamhit.fr/site/site.css?v=${GITHUB_SHA::7}"
+          grep -o 'public-scene.jpg?v=[0-9a-f]*' /tmp/out || echo "::warning::site.css en ligne ne cite pas la photo versionnée"
           check "API sans identifiants (attendu 400 bad_band : PHP et base joignables)" "https://jamhit.fr/api/index.php?a=ping"
           check "Fichier de configuration (attendu : réponse vide)" "https://jamhit.fr/api/config.php"
           check "Dossier des fichiers joints (attendu 403)" "https://jamhit.fr/api/files/.htaccess"

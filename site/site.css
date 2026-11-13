@@ -28,7 +28,7 @@ img { max-width: 100%; height: auto; }
 .hero-bg { position: relative; isolation: isolate; background: var(--bg); overflow: hidden; }
 /* La photo, fondue sur ses bords pour se mêler au fond de page */
 .hero-bg::after { content: ''; position: absolute; z-index: -2; top: 0; bottom: 0; left: calc(50% - 200px); width: min(56vw, 720px);
-  background: url("pictos/hero-scene.jpg") center 22% / cover no-repeat;
+  background: url("pictos/hero-scene.jpg?v=__V__") center 22% / cover no-repeat;
   -webkit-mask-image: radial-gradient(ellipse 50% 62% at 50% 42%, #000 45%, transparent 100%);
           mask-image: radial-gradient(ellipse 50% 62% at 50% 42%, #000 45%, transparent 100%); }
 /* Voile sombre côté texte pour la lisibilité */
@@ -48,6 +48,9 @@ section > .wrap > p.lead { color: var(--muted); margin: 0 0 1.6rem; max-width: 4
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 1.1rem 1.2rem; }
 .card h3 { margin: .3rem 0 .3rem; font-size: 1.08rem; }
+/* Les 6 fonctions sous l'en-tête : pictogramme, titre et texte centrés */
+#fonctions .card { text-align: center; }
+#fonctions .picto { margin-inline: auto; }
 .card p { margin: 0; color: var(--muted); font-size: .97rem; }
 .card .ico { font-size: 1.7rem; line-height: 1; }
 .picto { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #713BFF, #F01486); display: flex; align-items: center; justify-content: center; margin-bottom: .7rem; }
@@ -97,7 +100,7 @@ kbd { background: var(--soft); border: 1px solid var(--line); border-radius: 6px
 
 /* « Comment ça marche » : photo de concert aux couleurs d'origine (jaune), voile léger pour la lisibilité */
 .steps-bg { position: relative; isolation: isolate; padding-block: 6rem 7rem; overflow: hidden;
-  background: var(--bg) url("pictos/public-scene.jpg") center 70% / cover no-repeat; }
+  background: var(--bg) url("pictos/public-scene.jpg?v=__V__") center 70% / cover no-repeat; }
 .steps-bg::before { content: ''; position: absolute; inset: 0; z-index: -1;
   background: linear-gradient(180deg, var(--bg) 0%, rgba(20, 17, 29, .2) 18%, rgba(20, 17, 29, 0) 50%, rgba(20, 17, 29, .25) 85%, var(--bg) 100%); }
 .steps-bg h2, .steps-bg .lead { text-shadow: 0 2px 12px rgba(0, 0, 0, .8); }

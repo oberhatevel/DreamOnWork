@@ -2,7 +2,7 @@
 // __V__ est remplacé par le numéro de version à chaque mise en ligne.
 const V = '__V__';
 const CACHE = 'dow-' + V;
-const ASSETS = ['./', 'index.html', 'style.css?v=' + V, 'app.js?v=' + V, 'seed-songs.js?v=' + V, 'sync.js?v=' + V, 'tools.js?v=' + V, 'manifest.webmanifest', 'icon.svg', 'jamhit-logo.svg', 'icon-192.png', 'icon-512.png', 'posters/les-smaart-2026-10-24.jpg', 'posters/le-muutch-2026-10-09.jpg'];
+const ASSETS = ['./', 'index.html', 'style.css?v=' + V, 'app.js?v=' + V, 'demo-data.js?v=' + V, 'sync.js?v=' + V, 'tools.js?v=' + V, 'manifest.webmanifest', 'icon.svg', 'jamhit-logo.svg', 'icon-192.png', 'icon-512.png', 'posters/demo-nova-station.jpg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS.map(u => new Request(u, { cache: 'no-cache' })))).then(() => self.skipWaiting()));

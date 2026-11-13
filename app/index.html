@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Dream On Work</title>
+<title>JamHit</title>
 <meta name="description" content="Organisation des répétitions et concerts du groupe">
 <meta name="theme-color" content="#1b1530">
 <meta name="color-scheme" content="dark">
@@ -26,6 +26,7 @@
   <a href="#/tools" data-tab="tools">Outils</a>
   <a href="#/data" data-tab="data">Données</a>
 </nav>
+<div id="demo-banner" hidden><span>Vous voyez un <b>groupe de démonstration</b> (fictif).</span> <button class="btn small primary" data-act="demo-start">Créer mon groupe</button></div>
 <main id="view"></main>
 <div id="offline" hidden>Hors ligne — les données sont enregistrées sur cet appareil</div>
 
@@ -42,7 +43,7 @@
 
 <section id="print-area"></section>
 <input type="file" id="import-file" accept=".json,.csv,application/json,text/csv" hidden>
-<script src="seed-songs.js?v=__V__"></script>
+<script src="demo-data.js?v=__V__"></script>
 <script src="sync.js?v=__V__"></script>
 <script src="tools.js?v=__V__"></script>
 <script src="app.js?v=__V__"></script>

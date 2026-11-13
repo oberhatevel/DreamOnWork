@@ -1,5 +1,5 @@
 'use strict';
-/* Dream On Work — gestion des morceaux, musiciens et sets d'un groupe. Données locales (localStorage + IndexedDB). */
+/* JamHit — gestion des morceaux, musiciens et sets d'un groupe. Données locales (localStorage + IndexedDB). */
 
 // ---------- Utilitaires ----------
 const $ = (s, r = document) => r.querySelector(s);
@@ -29,29 +29,15 @@ const link = (u, label) => { const s = safeUrl(u); return s ? `<a href="${esc(s)
 const KEY = 'dow:v1:data';
 const TYPES = { repetition: 'Répétition', live: 'Live' };
 
-function seed() {
-  const m = (id, firstName, instruments, guest = false) => ({ id, firstName, instruments, birthDate: '', photo: '', guest });
-  return {
-    version: 1,
-    band: { name: 'Dream On', logo: '', background: '', website: 'https://dreamonmusic.com', facebook: '', instagram: '', video: '' },
-    musicians: [
-      m('m-valerie', 'Valérie', ['chant lead', 'chant', 'piano', 'flûte', 'tambourin']),
-      m('m-alex', 'Alex', ['chant lead', 'chant', 'piano', 'guitare acoustique', 'guitare électrique', 'harmonica', 'basse']),
-      m('m-sylvain', 'Sylvain', ['basse', 'guitare', 'chant']),
-      m('m-francis', 'Francis', ['batterie']),
-      m('m-yann', 'Yann', ['guitare électrique', 'piano', 'chant']),
-      m('m-arthur', 'Arthur', ['saxophone'], true),
-    ],
-    songs: structuredClone(SEED_SONGS),
-    sets: structuredClone(SEED_SETS),
-    seedVersion: SEED_VERSION,
-  };
-}
+// Données de départ : un groupe de démonstration fictif (voir demo-data.js).
+function seed() { return normalize(DEMO()); }
+const BLANK_BAND = { name: '', logo: '', background: '', website: '', facebook: '', instagram: '', video: '' };
+// Groupe vide, pour démarrer son propre groupe à la place de la démonstration.
+function emptyState(name = '') { return normalize({ band: { name }, musicians: [], songs: [], sets: [] }); }
 function normalize(d) {
-  const s = seed();
   d = d && typeof d === 'object' ? d : {};
-  const out = { version: 1, seedVersion: d.seedVersion || 0, band: { ...s.band, ...(d.band || {}) }, musicians: [], songs: [], sets: [] };
-  for (const m of Array.isArray(d.musicians) ? d.musicians : s.musicians)
+  const out = { version: 1, demo: !!d.demo, band: { ...BLANK_BAND, ...(d.band || {}) }, musicians: [], songs: [], sets: [] };
+  for (const m of Array.isArray(d.musicians) ? d.musicians : [])
     out.musicians.push({ id: m.id || uid(), firstName: m.firstName || '', instruments: Array.isArray(m.instruments) ? m.instruments : [], birthDate: m.birthDate || '', photo: m.photo || '', guest: !!m.guest });
   for (const x of Array.isArray(d.songs) ? d.songs : [])
     out.songs.push({ id: x.id || uid(), title: x.title || '', author: x.author || '', tempo: x.tempo || '', key: x.key || '', capo: x.capo || '', entryOrder: x.entryOrder || '', lead: x.lead || '', singer2: x.singer2 || '', solos: x.solos || '', remarks: x.remarks || '', parts: x.parts && typeof x.parts === 'object' ? x.parts : {}, videos: x.videos || [], scores: x.scores || [], recordings: x.recordings || [] });
@@ -62,53 +48,12 @@ function normalize(d) {
 let state;
 try { state = normalize(JSON.parse(localStorage.getItem(KEY))); } catch { state = seed(); }
 if (!localStorage.getItem(KEY)) state = seed();
-// Ancienne adresse par défaut (.fr) corrigée en .com sur les appareils déjà utilisés.
-if (state.band.website === 'https://DreamOnMusic.fr') { state.band.website = 'https://dreamonmusic.com'; localStorage.setItem(KEY, JSON.stringify(state)); }
 function persist() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); }
   catch (e) { alert("Enregistrement impossible : l'espace de stockage de l'appareil est plein."); }
 }
 // touch = false : changement automatique (mise à jour du répertoire de départ), non prioritaire à la synchronisation.
 function save(touch = true) { persist(); Sync.changed(touch); }
-// Répertoire de départ : ajouté une seule fois aux appareils déjà utilisés (sans doublon de titre).
-function addSeedData() {
-  const old = state.seedVersion || 0;
-  if (old >= SEED_VERSION) return;
-  const fresh = normalize({ musicians: [], songs: SEED_SONGS, sets: SEED_SETS });
-  const patches = SEED_PATCHES.filter(p => p.v > old);
-  const find = (id, title) => state.songs.find(y => y.id === id) || state.songs.find(y => norm(y.title) === norm(title));
-  const idMap = {};
-  // Morceaux : tous sur un appareil jamais initialisé, sinon seulement ceux apparus depuis sa version.
-  for (const x of fresh.songs) {
-    const same = find(x.id, x.title);
-    if (same) idMap[x.id] = same.id;
-    else if (!old || patches.some(p => p.id === x.id)) state.songs.push(x);
-  }
-  // Corrections des morceaux déjà présents (chanteur lead, instruments, titre).
-  if (old) for (const p of patches) {
-    const t = find(p.id, p.oldTitle || p.title || '');
-    if (!t) continue;
-    if (musician(p.lead)) t.lead = p.lead;
-    if (musician(p.singer2)) t.singer2 = p.singer2;
-    for (const [mid, part] of Object.entries(p.parts || {})) {
-      if (!part) delete t.parts[mid];                      // null : le musicien ne joue pas sur ce morceau
-      else if (musician(mid)) t.parts[mid] = structuredClone(part);
-    }
-    if (p.title && t.title === p.oldTitle) t.title = p.title;
-  }
-  SEED_SETS.forEach((raw, i) => {
-    const t = fresh.sets[i];
-    const have = state.sets.find(y => y.id === t.id);
-    if (have && (raw.remarksSince || 0) > old && have.remarks === raw.remarksOld) have.remarks = raw.remarks;
-    if (have && raw.posterUrl && (raw.posterSince || 1) > old && !have.posterId && !have.posterUrl) have.posterUrl = raw.posterUrl;
-    if ((raw.since || 1) <= old || state.sets.some(y => y.id === t.id)) return;
-    t.songIds = t.songIds.map(id => idMap[id] || id).filter(song);
-    t.musicianIds = t.musicianIds.filter(musician);
-    state.sets.push(t);
-  });
-  state.seedVersion = SEED_VERSION;
-  save(false);
-}
 let me = localStorage.getItem('dow:me') || '';
 
 const musician = id => state.musicians.find(m => m.id === id);
@@ -130,7 +75,6 @@ const lineup = s => {
   return l ? `<div class="lineup">${l}</div>` : '';
 };
 const voices = s => [s.lead && mName(s.lead), s.singer2 && mName(s.singer2)].filter(Boolean).join(' / ');
-addSeedData();
 
 // ---------- Fichiers (IndexedDB) ----------
 let dbp;
@@ -232,6 +176,7 @@ function render() {
   const tab = { sets: 'set', songs: 'song' }[page] || page;
   $$('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));
   const pages = { sets: vSets, set: vSet, songs: vSongs, song: vSong, musicians: vMusicians, band: vBand, data: vData, tools: Tools.view };
+  $('#demo-banner').hidden = !state.demo;
   view.innerHTML = (pages[page] || vSets)(id);
   hydrateFiles(view);
   if (page === 'tools') Tools.mount(id); else Tools.leave();
@@ -649,19 +594,30 @@ const A = {
     const name = $('#sync-band').value, code = $('#sync-code').value.trim();
     $('#sync-status').textContent = 'Connexion…';
     try {
-      const r = await Sync.connect(name, code);
+      if (state.demo && !confirm('Les données de démonstration (groupe fictif Nova Station) seront retirées de cet appareil avant la connexion. Continuer ?')) { $('#sync-status').textContent = ''; return; }
+      // La démonstration n'est jamais envoyée au serveur : on repart d'un groupe vide (nouveau groupe) ou des données du serveur.
+      const r = await Sync.connect(name, code, res => { if (state.demo) { state = emptyState(res.created ? name.trim() : ''); persist(); } });
       render();
       alert(r.created ? 'Groupe créé sur le serveur : cet appareil y envoie ses données.\nDonnez le nom du groupe et le code aux autres musiciens.'
-        : 'Appareil connecté au groupe.\nLes fiches du serveur remplacent celles de cet appareil ; ce qui n\'existe que sur cet appareil est envoyé.');
+        : 'Appareil connecté au groupe : ses données arrivent du serveur.\nSi cet appareil contenait déjà des fiches à vous, celles du serveur les remplacent et celles qui n\'existent qu\'ici sont envoyées.');
     } catch (e) { $('#sync-status').textContent = 'Connexion impossible : ' + e.message; }
   },
   'sync-now': () => Sync.run(),
+  'demo-start'() {
+    openDialog({
+      title: 'Créer mon groupe', ok: 'Créer',
+      body: `<p>Les données de démonstration (groupe fictif Nova Station) seront retirées de cet appareil et vous partirez d'un groupe vide.</p>
+        ${field('Nom de votre groupe', 'name', '', 'required')}
+        <p class="muted">Votre groupe existe déjà sur un autre appareil ? Utilisez plutôt « Synchronisation en ligne » dans l'onglet Données pour récupérer ses données.</p>`,
+      onSubmit(fd) { state = emptyState(fd.get('name').trim()); location.hash = '#/band'; },
+    });
+  },
   'sync-off'() {
     if (!confirm('Déconnecter cet appareil ? Ses données restent sur l\'appareil et sur le serveur, mais ne seront plus échangées.')) return;
     Sync.disconnect(); render();
   },
   async reset() {
-    if (!confirm('Effacer toutes les données de cet appareil et revenir aux données de départ ? Pensez à exporter avant.' + (Sync.enabled() ? '\nL\'appareil sera déconnecté de la synchronisation ; les données du serveur ne sont pas effacées.' : ''))) return;
+    if (!confirm('Effacer toutes les données de cet appareil et revenir au groupe de démonstration ? Pensez à exporter avant.' + (Sync.enabled() ? '\nL\'appareil sera déconnecté de la synchronisation ; les données du serveur ne sont pas effacées.' : ''))) return;
     Sync.disconnect();
     await fileClear(); urlCache.clear();
     state = seed(); save(); render();
@@ -861,7 +817,6 @@ function importJson(text) {
         if (!confirm('Remplacer toutes les données de cet appareil ?')) return false;
         await fileClear(); urlCache.clear();
         state = inc;
-        state.seedVersion = SEED_VERSION;
       } else {
         if (data.band) state.band = inc.band;
         for (const k of ['musicians', 'songs', 'sets']) {
@@ -887,6 +842,23 @@ $('#import-file').addEventListener('change', async e => {
 const offline = () => { $('#offline').hidden = navigator.onLine; };
 addEventListener('online', offline); addEventListener('offline', offline); offline();
 dlg.addEventListener('close', () => { if (Sync.enabled()) setTimeout(render, 0); });
+// Affiches autrefois fournies avec l'application (hors démonstration) : copiées dans les fichiers de l'appareil,
+// pour qu'elles suivent la synchronisation et ne dépendent plus d'un fichier du site.
+(async () => {
+  if (state.demo) return;
+  let changed = false;
+  for (const s of state.sets) {
+    if (!s.posterUrl || s.posterId) continue;
+    try {
+      const res = await fetch(s.posterUrl);
+      if (!res.ok) continue;
+      const id = uid();
+      await filePut(id, await res.blob());
+      s.posterId = id; s.posterUrl = ''; changed = true;
+    } catch { /* hors ligne : nouvel essai au prochain lancement */ }
+  }
+  if (changed) { save(); render(); }
+})();
 Sync.start();
 if (!location.hash) history.replaceState(null, '', '#/sets');
 render();

@@ -10,6 +10,12 @@ morceaux, musiciens, groupe et sets, avec édition d'une fiche PDF par musicien.
   Partage entre musiciens par export / import **JSON** (complet, fichiers inclus) ou **CSV** (morceaux, musiciens, sets).
 - **PDF** : dans un set, bouton « PDF » → choisir le musicien → « Enregistrer au format PDF » dans la fenêtre d'impression.
 
+## Données de départ
+
+Au premier lancement, l'application affiche un groupe de démonstration fictif (`app/demo-data.js`, « Nova Station »).
+Il est retiré dès que l'on crée son groupe ou que l'on connecte l'appareil à la synchronisation ; il n'est jamais envoyé au serveur.
+Les données réelles d'un groupe n'existent que sur ses appareils et, s'il synchronise, dans la base du serveur.
+
 ## Lancer en local
 
 ```sh

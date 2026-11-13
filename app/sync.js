@@ -186,11 +186,12 @@ const Sync = (() => {
   // Appelé à chaque enregistrement local.
   function changed(touch = true) { if (!enabled()) return; stamp(touch); schedule(2000); }
 
-  async function connect(name, code) {
+  async function connect(name, code, prepare) {
     const band = slugify(name);
     if (band.length < 2) throw new Error('Indiquez le nom du groupe (au moins 2 lettres ou chiffres).');
     if (code.length < 4) throw new Error("Le code d'accès doit comporter au moins 4 caractères.");
     const res = await api('ping', { creds: { band, code } });
+    if (prepare) prepare(res);          // dernier réglage des données locales avant le premier échange
     cfg = { band, code, lastRev: 0, docs: {}, seen: {}, mt: {}, files: {}, lastOk: 0 };
     store(); setStatus('idle');
     run();

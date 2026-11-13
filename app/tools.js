@@ -4,7 +4,7 @@
 const Tools = (() => {
   const el = id => document.getElementById(id);
   const mod = a => ((a % 12) + 12) % 12;
-  const SUBS = [['tempo', 'Tempo'], ['tuner', 'Accordeur'], ['scales', 'Accords et gammes']];
+  const SUBS = [['tempo', 'Tempo'], ['tuner', 'Accordeur'], ['scales', 'Accords et gammes'], ['stage', 'Plan de scène']];
   const KEY = 'dow:tools';
   let st = { key: 9, q: 'min', modes: false, mode: 0, pos: 0, deg: false, nums: true, caged: false, cq: '', blues: false, bpm: 100, snd: true, fl: false };
   try { Object.assign(st, JSON.parse(localStorage.getItem(KEY)) || {}); } catch { /* réglages par défaut */ }
@@ -388,16 +388,24 @@ const Tools = (() => {
   function view(id) {
     const s = SUBS.some(x => x[0] === id) ? id : 'tempo';
     return `<div class="tl-sub">${SUBS.map(([k, l]) => `<a href="#/tools/${k}" class="${k === s ? 'on' : ''}">${l}</a>`).join('')}${s === 'tempo' ? '' : '<span class="tl-mini" id="tl-mini"></span>'}</div>
-      ${s === 'tempo' ? tempoHTML() : s === 'tuner' ? tunerHTML() : scalesHTML()}`;
+      ${s === 'tempo' ? tempoHTML() : s === 'tuner' ? tunerHTML() : s === 'stage' ? StagePlot.view() : scalesHTML()}`;
   }
   // Appelé après l'affichage de l'onglet Outils.
   function mount(id) {
     const s = SUBS.some(x => x[0] === id) ? id : 'tempo';
     if (s !== 'tuner') tnQuit();
+    if (s !== 'stage') StagePlot.leave();
     if (s !== 'scales' && full) setFull(false);
     sub = s;
     metroUI();
     if (s === 'tuner') { tnChips(); if (!tnOn) tnIdle(); }
+    if (s === 'stage') {
+      // Plan de scène : données du groupe en lecture seule, plans enregistrés et synchronisés avec le reste.
+      StagePlot.setInput(stageInput());
+      StagePlot.setPlans(state.stagePlans);
+      StagePlot.onChange = plans => { state.stagePlans = plans; save(); };
+      StagePlot.mount(decodeURIComponent(location.hash.split('/')[3] || ''));
+    }
     if (s === 'scales') {
       drawScales();
       // glissement sur le manche : gauche = demi-ton au-dessus, droite = demi-ton en dessous
@@ -408,6 +416,6 @@ const Tools = (() => {
     }
   }
   // Appelé quand on quitte l'onglet Outils : micro, métronome et plein écran sont arrêtés.
-  function leave() { if (!sub) return; sub = ''; tnQuit(); mstop(); if (full) setFull(false); }
+  function leave() { if (!sub) return; sub = ''; tnQuit(); mstop(); StagePlot.leave(); if (full) setFull(false); }
   return { view, mount, leave };
 })();

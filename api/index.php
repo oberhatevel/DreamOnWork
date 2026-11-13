@@ -87,7 +87,7 @@ if ($action === 'pull' && $method === 'GET') {
 if ($action === 'push' && $method === 'POST') {
     $body = json_decode(file_get_contents('php://input') ?: '', true);
     if (!is_array($body) || !is_array($body['docs'] ?? null)) fail('bad_request', 400, 'Requête invalide.');
-    $kinds = ['band', 'musician', 'song', 'set', 'meta'];
+    $kinds = ['band', 'musician', 'song', 'set', 'stageplan', 'meta'];
     foreach ($body['docs'] as $d) {
         if (!in_array($d['k'] ?? '', $kinds, true) || !$validId($d['id'] ?? null)) fail('bad_request', 400, 'Fiche invalide.');
         if (empty($d['del']) && (!is_string($d['d'] ?? null) || strlen($d['d']) > MAX_DOC || json_decode($d['d']) === null)) fail('bad_request', 400, 'Contenu de fiche invalide.');

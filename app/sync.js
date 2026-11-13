@@ -4,6 +4,7 @@
 const Sync = (() => {
   const KEY = 'dow:sync', API = '../api/index.php';
   let cfg = read();
+  if (cfg.band && (cfg.kinds || 1) < 2) { cfg.lastRev = 0; cfg.kinds = 2; try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch { /* sans effet */ } }
   let status = 'off', message = '', running = false, timer = null;
 
   function read() {
@@ -29,7 +30,8 @@ const Sync = (() => {
     for (const x of state.musicians) m.set('musician:' + x.id, JSON.stringify(x));
     for (const x of state.songs) m.set('song:' + x.id, JSON.stringify(x));
     for (const x of state.sets) m.set('set:' + x.id, JSON.stringify(x));
-    m.set('meta:order', JSON.stringify({ musicians: ids(state.musicians), songs: ids(state.songs), sets: ids(state.sets) }));
+    for (const x of state.stagePlans) m.set('stageplan:' + x.id, JSON.stringify(x));
+    m.set('meta:order', JSON.stringify({ musicians: ids(state.musicians), songs: ids(state.songs), sets: ids(state.sets), stagePlans: ids(state.stagePlans) }));
     return m;
   }
   // Note l'heure de modification des fiches qui viennent de changer (touch = false : changement automatique, non prioritaire).
@@ -72,7 +74,7 @@ const Sync = (() => {
 
   // Applique au stockage local une fiche reçue du serveur. Renvoie vrai si quelque chose a changé.
   function applyRemote(r, order) {
-    const coll = { musician: 'musicians', song: 'songs', set: 'sets' }[r.k];
+    const coll = { musician: 'musicians', song: 'songs', set: 'sets', stageplan: 'stagePlans' }[r.k];
     if (r.del) {
       if (!coll) return false;
       const n = state[coll].length;
@@ -91,7 +93,8 @@ const Sync = (() => {
   }
   function applyOrder(o) {
     let changed = false;
-    for (const coll of ['musicians', 'songs', 'sets']) {
+    for (const coll of ['musicians', 'songs', 'sets', 'stagePlans']) {
+      if (coll === 'stagePlans' && !o?.[coll]) continue;
       const pos = new Map((o?.[coll] || []).map((id, i) => [id, i]));
       const before = ids(state[coll]).join();
       state[coll] = state[coll].map((x, i) => [x, pos.has(x.id) ? pos.get(x.id) : 1e9 + i]).sort((a, b) => a[1] - b[1]).map(a => a[0]);
@@ -193,7 +196,7 @@ const Sync = (() => {
     if (code.length < 4) throw new Error("Le code d'accès doit comporter au moins 4 caractères.");
     const res = await api('ping' + (mode === 'join' ? '&nocreate=1' : mode === 'create' ? '&mustcreate=1' : ''), { creds: { band, code } });
     if (prepare) prepare(res);          // dernier réglage des données locales avant le premier échange
-    cfg = { band, code, lastRev: 0, docs: {}, seen: {}, mt: {}, files: {}, lastOk: 0 };
+    cfg = { band, code, lastRev: 0, docs: {}, seen: {}, mt: {}, files: {}, lastOk: 0, kinds: 2 };
     store(); setStatus('idle');
     run();
     return res;

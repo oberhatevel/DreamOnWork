@@ -33,7 +33,7 @@ const TYPES = { repetition: 'Répétition', live: 'Live' };
 function seed() { return normalize(DEMO()); }
 const BLANK_BAND = { name: '', logo: '', background: '', website: '', facebook: '', instagram: '', video: '' };
 // Groupe vide, pour démarrer son propre groupe à la place de la démonstration.
-function emptyState(name = '') { return normalize({ band: { name }, musicians: [], songs: [], sets: [] }); }
+function emptyState(name = '') { return normalize({ band: { name }, musicians: [], songs: [], sets: [], stagePlans: [] }); }
 // Affiches fournies autrefois avec l'application : ce sont maintenant des fichiers privés du groupe, sur le serveur.
 const LEGACY_POSTERS = { 'posters/les-smaart-2026-10-24.jpg': 'legacy-les-smaart', 'posters/le-muutch-2026-10-09.jpg': 'legacy-le-muutch' };
 // Matériel : celui d'un musicien (musician.gear) ou le matériel commun (band.gear, avec « au groupe » ou « à louer »).
@@ -46,6 +46,9 @@ function normalize(d) {
   d = d && typeof d === 'object' ? d : {};
   const out = { version: 1, demo: !!d.demo, band: { ...BLANK_BAND, ...(d.band || {}) }, musicians: [], songs: [], sets: [] };
   out.band.gear = gearList(out.band.gear);   // matériel commun du groupe
+  // Plans de scène (format « stage-plan » du module StagePlot) : chacun peut servir à plusieurs sets.
+  out.stagePlans = (Array.isArray(d.stagePlans) ? d.stagePlans : []).filter(x => x && typeof x === 'object' && /^[\w-]{1,64}$/.test(x.id || ''))
+    .map(x => ({ ...x, name: x.name || 'Plan', setIds: Array.isArray(x.setIds) ? x.setIds : [] }));
   for (const m of Array.isArray(d.musicians) ? d.musicians : [])
     out.musicians.push({ id: m.id || uid(), firstName: m.firstName || '', instruments: Array.isArray(m.instruments) ? m.instruments : [], birthDate: m.birthDate || '', photo: m.photo || '', guest: !!m.guest, gear: gearList(m.gear) });
   for (const x of Array.isArray(d.songs) ? d.songs : [])
@@ -250,6 +253,7 @@ function vSet(id) {
     ${s.remarks ? `<p class="pre">${esc(s.remarks)}</p>` : ''}
     <div class="sec-head"><h2>Morceaux (${songs.length})</h2><button class="btn primary small" data-act="set-pick" data-id="${s.id}">Choisir les morceaux</button></div>
     <div id="set-songs" data-id="${s.id}">${rows || `<div class="empty">Aucun morceau sélectionné.</div>`}</div>
+    ${planSection(s)}
     ${attSection('Enregistrements', 'set:' + s.id, 'recordings', 'audio/*,video/*')}
     ${attSection('Photos', 'set:' + s.id, 'photos', 'image/*')}`;
 }
@@ -380,6 +384,37 @@ function vData() {
 function connectGroup(name, code, mode) {
   return Sync.connect(name, code, res => { if (state.demo) { state = emptyState(res.created ? name.trim() : ''); persist(); } }, mode);
 }
+// Données transmises au module de plan de scène (format « stage-input »), aussi exportables depuis l'onglet Données.
+function stageInput() {
+  const gear = l => l.map(({ id, name, type, qty, note, owner }) => ({ id, name, type, qty, note, owner }));
+  return {
+    app: 'jamhit', format: 'stage-input', version: 1, exportedAt: new Date().toISOString(),
+    band: { name: state.band.name },
+    musicians: state.musicians.map(m => ({ id: m.id, firstName: m.firstName, instruments: m.instruments, guest: m.guest, gear: gear(m.gear).map(({ owner, ...g }) => g) })),
+    commonGear: gear(state.band.gear),
+    sets: state.sets.map(s => ({ id: s.id, name: s.name, date: s.date, type: s.type, musicianIds: s.musicianIds })),
+  };
+}
+const planHref = id => '#/tools/stage/' + encodeURIComponent(id);
+// Section « Plan de scène » de la page d'un set.
+function planSection(s) {
+  const mine = state.stagePlans.filter(p => p.setIds.includes(s.id)), others = state.stagePlans.length - mine.length;
+  const setName = id => { const t = state.sets.find(x => x.id === id); return t ? t.name + (t.date ? ' (' + fmtDate(t.date, true) + ')' : '') : ''; };
+  const rows = mine.map(p => {
+    const also = p.setIds.filter(id => id !== s.id).map(setName).filter(Boolean);
+    const n = (p.items || []).length, l = (p.links || []).length;
+    return `<div class="att"><div class="grow">
+        <a href="${planHref(p.id)}"><b>${esc(p.name)}</b></a>
+        <div class="muted">${n ? `${n} élément${n > 1 ? 's' : ''}${l ? ` · ${l} liaison${l > 1 ? 's' : ''}` : ''}` : 'Plan vide'}${also.length ? ' · aussi pour ' + esc(also.join(', ')) : ''}</div></div>
+      <a class="btn small primary" href="${planHref(p.id)}">Ouvrir</a>
+      <button class="icon" title="Dupliquer pour ce set" data-act="plan-dup" data-id="${esc(p.id)}" data-set="${s.id}">⧉</button>
+      <button class="icon" title="Retirer de ce set" data-act="plan-unlink" data-id="${esc(p.id)}" data-set="${s.id}">✕</button></div>`;
+  }).join('');
+  return `<div class="sec-head"><h2>Plan de scène</h2><div class="actions">
+      ${others ? `<button class="btn small" data-act="plan-link" data-set="${s.id}">Associer un plan existant</button>` : ''}
+      <button class="btn small" data-act="plan-new" data-set="${s.id}">+ Nouveau plan</button></div></div>
+    <div class="card">${rows || '<span class="muted">Aucun plan de scène pour ce set. Créez-en un, ou associez un plan déjà fait pour un autre concert ou une autre répétition.</span>'}</div>`;
+}
 const notFound = back => `<div class="empty">Élément introuvable. <a href="${back}">Retour</a></div>`;
 
 // ---------- Pièces jointes (liens ou fichiers) ----------
@@ -442,11 +477,13 @@ const A = {
     if (!confirm(`Supprimer le set « ${s.name} » ? (les morceaux sont conservés)`)) return;
     dropFiles(s);
     state.sets = state.sets.filter(x => x !== s);
+    for (const p of state.stagePlans) p.setIds = p.setIds.filter(id => id !== s.id);
     save(); location.hash = '#/sets';
   },
   'set-dup'(el) {
     const s = state.sets.find(x => x.id === el.dataset.id);
     const c = { ...s, id: uid(), name: s.name + ' (copie)', date: '', songIds: [...s.songIds], musicianIds: [...s.musicianIds], posterId: '', posterUrl: '', recordings: [], photos: [] };
+    for (const p of state.stagePlans) if (p.setIds.includes(s.id)) p.setIds.push(c.id);   // la copie reprend les plans de scène
     state.sets.push(c); save(); location.hash = '#/set/' + c.id;
   },
   'set-move'(el) {
@@ -564,6 +601,37 @@ const A = {
     save(); render();
   },
 
+  // Plans de scène depuis la page d'un set
+  'plan-new'(el) {
+    const s = state.sets.find(x => x.id === el.dataset.set);
+    const p = { id: 'plan-' + uid(), name: 'Plan — ' + (s.name || 'set'), updated: Date.now(), setIds: [s.id] };
+    state.stagePlans.push(p); save(); location.hash = planHref(p.id);
+  },
+  'plan-dup'(el) {
+    const p = state.stagePlans.find(x => x.id === el.dataset.id), sid = el.dataset.set, s = state.sets.find(x => x.id === sid);
+    const shared = p.setIds.length > 1;
+    if (!confirm(`Créer une copie de « ${p.name} » propre au set « ${s.name} » ?\n` + (shared ? `L'original reste associé à ses autres sets ; la copie remplace l'original pour ce set.` : `L'original est détaché de ce set et reste disponible dans Outils → Plan de scène.`))) return;
+    const c = structuredClone(p);
+    c.id = 'plan-' + uid(); c.name = p.name + ' (copie)'; c.updated = Date.now(); c.setIds = [sid];
+    p.setIds = p.setIds.filter(x => x !== sid);
+    state.stagePlans.push(c); save(); location.hash = planHref(c.id);
+  },
+  'plan-unlink'(el) {
+    const p = state.stagePlans.find(x => x.id === el.dataset.id);
+    if (!confirm(`Retirer « ${p.name} » de ce set ? Le plan n'est pas supprimé : il reste dans Outils → Plan de scène.`)) return;
+    p.setIds = p.setIds.filter(x => x !== el.dataset.set); save(); render();
+  },
+  'plan-link'(el) {
+    const sid = el.dataset.set, list = state.stagePlans.filter(p => !p.setIds.includes(sid));
+    const sets = p => p.setIds.map(id => state.sets.find(x => x.id === id)?.name).filter(Boolean).join(', ');
+    openDialog({
+      title: 'Associer un plan de scène', ok: 'Associer',
+      body: `<p class="muted">Un même plan peut servir à plusieurs sets : ses modifications valent alors pour tous.</p>
+        <div class="picklist">${list.map(p => `<label><input type="radio" name="plan" value="${esc(p.id)}" required><span>${esc(p.name)} <span class="muted">${esc(sets(p) || 'aucun set')}</span></span></label>`).join('')}</div>`,
+      onSubmit(fd) { const p = state.stagePlans.find(x => x.id === fd.get('plan')); if (p) p.setIds.push(sid); },
+    });
+  },
+
   // Matériel (d'un musicien ou commun)
   'gear-edit'(el) {
     const { ref, id } = el.dataset, owner = gearOwner(ref), common = ref === 'band';
@@ -653,16 +721,8 @@ const A = {
   'exp-json': exportJson,
   'exp-csv': el => exportCsv(el.dataset.id),
   // Données utiles à un concepteur de plan de scène : groupe, musiciens, instruments, matériel, sets.
-  'exp-stage'() {
-    const gear = l => l.map(({ id, name, type, qty, note, owner }) => ({ id, name, type, qty, note, owner }));
-    download(`${slug()}-plan-de-scene-${today()}.json`, JSON.stringify({
-      app: 'jamhit', format: 'stage-input', version: 1, exportedAt: new Date().toISOString(),
-      band: { name: state.band.name },
-      musicians: state.musicians.map(m => ({ id: m.id, firstName: m.firstName, instruments: m.instruments, guest: m.guest, gear: gear(m.gear).map(({ owner, ...g }) => g) })),
-      commonGear: gear(state.band.gear),
-      sets: state.sets.map(s => ({ id: s.id, name: s.name, date: s.date, type: s.type, musicianIds: s.musicianIds })),
-    }, null, 1), 'application/json');
-  },
+  'exp-stage'() { download(`${slug()}-plan-de-scene-${today()}.json`, JSON.stringify(stageInput(), null, 1), 'application/json'); },
+
   imp: () => $('#import-file').click(),
   async 'sync-on'() {
     const name = $('#sync-band').value, code = $('#sync-code').value.trim();
@@ -930,7 +990,7 @@ function importJson(text) {
         state = inc;
       } else {
         if (data.band) state.band = inc.band;
-        for (const k of ['musicians', 'songs', 'sets']) {
+        for (const k of ['musicians', 'songs', 'sets', 'stagePlans']) {
           if (!Array.isArray(data[k])) continue;
           for (const x of inc[k]) { const i = state[k].findIndex(y => y.id === x.id); if (i >= 0) state[k][i] = x; else state[k].push(x); }
         }

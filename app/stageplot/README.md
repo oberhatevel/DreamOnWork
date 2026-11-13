@@ -4,7 +4,10 @@ Concepteur de plan de scène : on pose les musiciens et le matériel sur une sc�
 calcule les longueurs de câble, numérote le patch et dresse la liste de matériel (apporté, au groupe, à louer / manquant).
 
 Cahier des charges d'origine : `docs/plan-de-scene/README.md`.
-Ce dossier n'est **pas encore branché** sur l'application : ni `app/index.html`, ni `app/sw.js`, ni `app/tools.js` ne le référencent.
+**Branché dans JamHit** : sous-onglet Outils → « Plan de scène » (`app/tools.js`) et rubrique « Plan de scène » de chaque set (`app/app.js`).
+Les plans sont stockés dans `state.stagePlans` et synchronisés comme fiches `stageplan` (`app/sync.js`, `api/index.php`).
+Depuis un set : nouveau plan, « Dupliquer pour ce set » (copie propre au set, l'original garde ses autres sets), association d'un plan existant, retrait.
+La page `index.html` de ce dossier reste la page de développement autonome.
 
 ## Fichiers
 

@@ -95,10 +95,13 @@ kbd { background: var(--soft); border: 1px solid var(--line); border-radius: 6px
 .card-photo h3 { margin-top: .9rem; }
 .card-photo p { padding-bottom: 1.1rem; }
 
-/* « Comment ça marche » : photo de public teintée, voilée pour garder les étapes lisibles */
-.steps-bg { position: relative; isolation: isolate; padding-block: 5rem; overflow: hidden;
-  background: var(--bg) url("pictos/public-scene.jpg") center 72% / cover no-repeat; }
+/* « Comment ça marche » : photo de concert aux couleurs d'origine (jaune), voile léger pour la lisibilité */
+.steps-bg { position: relative; isolation: isolate; padding-block: 6rem 7rem; overflow: hidden;
+  background: var(--bg) url("pictos/public-scene.jpg") center 70% / cover no-repeat; }
 .steps-bg::before { content: ''; position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(180deg, var(--bg) 0%, rgba(20, 17, 29, .35) 20%, rgba(20, 17, 29, .1) 55%, rgba(20, 17, 29, .45) 85%, var(--bg) 100%); }
-.steps-bg .lead { color: #d6d0e4; }
-.steps-bg .steps li { background: rgba(31, 27, 44, .72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-color: rgba(255, 255, 255, .12); }
+  background: linear-gradient(180deg, var(--bg) 0%, rgba(20, 17, 29, .2) 18%, rgba(20, 17, 29, 0) 50%, rgba(20, 17, 29, .25) 85%, var(--bg) 100%); }
+.steps-bg h2, .steps-bg .lead { text-shadow: 0 2px 12px rgba(0, 0, 0, .8); }
+section.steps-bg > .wrap > p.lead { color: #f1ece0; }
+.steps-bg .steps li { background: rgba(20, 17, 29, .62); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border-color: rgba(255, 214, 120, .25); }
+.steps-bg .steps li::before { background: #f5b531; color: #1d1608; }
+.steps-bg .steps span { color: #e4ded2; }

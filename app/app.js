@@ -167,6 +167,12 @@ function route() {
   const [, page = 'sets', id] = location.hash.split('/');
   return { page, id };
 }
+// Lien « Se connecter à mon groupe » de la page de présentation.
+function openJoin() {
+  if (route().page !== 'join') return;
+  history.replaceState(null, '', '#/sets');
+  setTimeout(() => A.join(), 0);
+}
 function render() {
   const { page, id } = route();
   $('#brand-name').innerHTML = `<b>Jam<i>Hit</i></b><span class="brand-band">${esc(state.band.name || 'Mon groupe')}</span>`;
@@ -341,6 +347,11 @@ function vData() {
     <h2>Aide</h2>
     <div class="card"><div class="actions"><a class="btn" href="../tutoriel.html">Tutoriel</a><a class="btn" href="../">Présentation de JamHit</a></div></div>
     <p class="muted">Version de l'application : ${esc(v)}</p>`;
+}
+// Connecte l'appareil à un groupe. La démonstration n'est jamais envoyée au serveur :
+// on repart d'un groupe vide (groupe nouvellement créé) ou des données du serveur.
+function connectGroup(name, code, joinOnly) {
+  return Sync.connect(name, code, res => { if (state.demo) { state = emptyState(res.created ? name.trim() : ''); persist(); } }, joinOnly);
 }
 const notFound = back => `<div class="empty">Élément introuvable. <a href="${back}">Retour</a></div>`;
 
@@ -595,12 +606,28 @@ const A = {
     $('#sync-status').textContent = 'Connexion…';
     try {
       if (state.demo && !confirm('Les données de démonstration (groupe fictif Nova Station) seront retirées de cet appareil avant la connexion. Continuer ?')) { $('#sync-status').textContent = ''; return; }
-      // La démonstration n'est jamais envoyée au serveur : on repart d'un groupe vide (nouveau groupe) ou des données du serveur.
-      const r = await Sync.connect(name, code, res => { if (state.demo) { state = emptyState(res.created ? name.trim() : ''); persist(); } });
+      const r = await connectGroup(name, code, false);
       render();
       alert(r.created ? 'Groupe créé sur le serveur : cet appareil y envoie ses données.\nDonnez le nom du groupe et le code aux autres musiciens.'
         : 'Appareil connecté au groupe : ses données arrivent du serveur.\nSi cet appareil contenait déjà des fiches à vous, celles du serveur les remplacent et celles qui n\'existent qu\'ici sont envoyées.');
     } catch (e) { $('#sync-status').textContent = 'Connexion impossible : ' + e.message; }
+  },
+  // Accès direct à son groupe (bandeau de démonstration, page de présentation) : nom du groupe + code d'accès.
+  join() {
+    if (Sync.enabled()) { alert(`Cet appareil est déjà connecté au groupe « ${Sync.band} ».`); return; }
+    openDialog({
+      title: 'Se connecter à mon groupe', ok: 'Se connecter',
+      body: `<p class="muted">Saisissez le nom du groupe et le code d'accès choisis par votre groupe. Ses données s'installent sur cet appareil${state.demo ? ' à la place de la démonstration' : ''}.</p>
+        ${field('Nom du groupe', 'band', '', 'required autocapitalize="none" autocomplete="off" placeholder="ex. mon-groupe"')}
+        ${field("Code d'accès", 'code', '', 'required autocapitalize="none" autocomplete="off"')}
+        <p class="muted" id="join-status"></p>`,
+      async onSubmit(fd) {
+        $('#join-status').textContent = 'Connexion…';
+        try { await connectGroup(fd.get('band'), fd.get('code').trim(), true); }
+        catch (e) { $('#join-status').textContent = 'Connexion impossible : ' + e.message; return false; }
+        location.hash = '#/sets';
+      },
+    });
   },
   'sync-now': () => Sync.run(),
   'demo-start'() {
@@ -663,7 +690,7 @@ view.addEventListener('pointerdown', e => {
   grip.addEventListener('pointercancel', end);
 });
 $('#me-select').addEventListener('change', e => { me = e.target.value; localStorage.setItem('dow:me', me); render(); });
-window.addEventListener('hashchange', () => { render(); scrollTo(0, 0); });
+window.addEventListener('hashchange', () => { openJoin(); render(); scrollTo(0, 0); });
 
 // ---------- PDF (impression) ----------
 function buildPrint(s, who) {
@@ -841,7 +868,7 @@ $('#import-file').addEventListener('change', async e => {
 // ---------- Démarrage ----------
 const offline = () => { $('#offline').hidden = navigator.onLine; };
 addEventListener('online', offline); addEventListener('offline', offline); offline();
-dlg.addEventListener('close', () => { if (Sync.enabled()) setTimeout(render, 0); });
+dlg.addEventListener('close', () => { if (Sync.enabled()) setTimeout(() => { render(); Sync.run(); }, 0); });
 // Affiches autrefois fournies avec l'application (hors démonstration) : copiées dans les fichiers de l'appareil,
 // pour qu'elles suivent la synchronisation et ne dépendent plus d'un fichier du site.
 (async () => {
@@ -861,6 +888,7 @@ dlg.addEventListener('close', () => { if (Sync.enabled()) setTimeout(render, 0);
 })();
 Sync.start();
 if (!location.hash) history.replaceState(null, '', '#/sets');
+openJoin();
 render();
 navigator.storage?.persist?.().catch(() => {});
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});

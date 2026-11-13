@@ -49,6 +49,10 @@ if (strlen($code) < 4 || strlen($code) > 200) fail('bad_code', 400, "Le code d'a
 try { $band = q($db, 'SELECT * FROM dow_bands WHERE slug = ?', [$slug])->fetch(); }
 catch (PDOException $e) { schema($db); $band = false; }
 $created = false;
+if (!$band && !empty($_GET['nocreate'])) {
+    // Connexion à un groupe existant : une faute de frappe dans le nom ne doit pas créer un groupe vide.
+    fail('no_band', 404, "Aucun groupe de ce nom sur le serveur. Vérifiez l'orthographe, ou créez le groupe depuis l'onglet Données.");
+}
 if (!$band) {
     // Premier appareil à utiliser ce nom de groupe : il en fixe le code d'accès.
     try { q($db, 'INSERT INTO dow_bands (slug, code_hash, rev, created) VALUES (?, ?, 0, ?)', [$slug, password_hash($code, PASSWORD_DEFAULT), now_ms()]); $created = true; }

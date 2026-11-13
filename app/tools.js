@@ -80,7 +80,8 @@ const Tools = (() => {
   // Micro + détection de hauteur YIN, aiguille ±50 cents, note de référence (Web Audio).
   const TS = [['E', 2, 82.41, 6], ['A', 2, 110, 5], ['D', 3, 146.83, 4], ['G', 3, 196, 3], ['B', 3, 246.94, 2], ['E', 4, 329.63, 1]];
   let tnBytes = null, tnHeard = 0, tnQ = 0, tnRaw = 0;
-  let tnOn = false, tnAuto = true, tnSel = 0, tnDone = [], tnCtx = null, tnStream = null, tnAn = null, tnBuf = null, tnRaf = 0, tnLast = 0, tnHist = [], tnIn = 0, tnSil = 0, tnTc = null, tnOsc = null, tnTimer = null;
+  let tnWait = 0;   // pause entre deux cordes en mode guidé
+  let tnOn = false, tnAuto = false, tnSel = 0, tnDone = [], tnCtx = null, tnStream = null, tnAn = null, tnBuf = null, tnRaf = 0, tnLast = 0, tnHist = [], tnIn = 0, tnSil = 0, tnTc = null, tnOsc = null, tnTimer = null;
   function yin(buf, sr) {
     const W = 2048, tmin = Math.max(2, Math.floor(sr / 400)), tmax = Math.min(Math.floor(sr / 60), buf.length - W - 1);
     let r = 0, m0 = 0; for (let i = 0; i < W; i++) m0 += buf[i]; m0 /= W;
@@ -109,7 +110,7 @@ const Tools = (() => {
     el('tl-name').textContent = tnAuto ? '–' : TS[tnSel][0];
     el('tl-hz').textContent = tnAuto ? '' : 'corde ' + TS[tnSel][3] + ' · ' + TS[tnSel][2].toFixed(1) + ' Hz';
     el('tl-stat').style.color = 'var(--muted)';
-    el('tl-stat').textContent = tnOn ? 'Jouez une corde à vide…' : 'Appuyez sur « Écouter », puis jouez une corde à vide. Ou écoutez la note de référence.';
+    el('tl-stat').textContent = tnOn ? (tnAuto ? 'Jouez une corde à vide…' : `Jouez la corde ${TS[tnSel][3]} à vide (${TS[tnSel][0]})…`) : 'Appuyez sur « Écouter », puis jouez une corde à vide. Ou écoutez la note de référence.';
   }
   function tnUpdate(f) {
     if (!el('tl-name')) return;
@@ -123,7 +124,17 @@ const Tools = (() => {
     el('tl-stat').style.color = col;
     el('tl-stat').textContent = a <= 5 ? '✓ Accordée' : c < 0 ? 'Trop grave : tendre la corde (monter)' : 'Trop aigu : détendre la corde (descendre)';
     const now = performance.now();
-    if (a <= 5) { if (!tnIn) tnIn = now; else if (now - tnIn > 900 && !tnDone[i]) { tnDone[i] = true; tnChips(); } } else tnIn = 0;
+    // Validée après 0,35 s dans la zone verte ; en mode guidé, passage tout seul à la corde suivante.
+    if (a > 5) { tnIn = 0; return; }
+    if (!tnIn) { tnIn = now; return; }
+    if (now - tnIn < 350 || tnDone[i]) return;
+    tnDone[i] = true; tnIn = 0; tnChips();
+    if (tnAuto) return;
+    const next = TS.findIndex((x, k) => k > i && !tnDone[k]), left = next >= 0 ? next : TS.findIndex((x, k) => !tnDone[k]);
+    if (left < 0) { el('tl-stat').style.color = '#22c55e'; el('tl-stat').textContent = '✓ Les 6 cordes sont accordées'; tnWait = now + 1e9; return; }
+    el('tl-stat').textContent = `✓ ${t[0]} accordée — corde suivante : ${TS[left][0]} (corde ${TS[left][3]})`;
+    tnWait = now + 700;
+    setTimeout(() => { tnSel = left; tnHist = []; tnIn = 0; tnWait = 0; tnChips(); tnIdle(); }, 700);
   }
   // Lecture du signal : flottants si le navigateur le permet, sinon octets convertis (anciens Safari).
   function tnRead() {
@@ -147,7 +158,8 @@ const Tools = (() => {
     const f = yin(tnBuf, tnCtx.sampleRate);
     const dg = el('tl-diag');
     if (dg) dg.textContent = `Mesure : ${f > 0 ? f.toFixed(1) + ' Hz' : '—'} · fiabilité ${Math.round(tnQ * 100)} % · ${Math.round(tnCtx.sampleRate / 100) / 10} kHz`;
-    if (f > 0) { tnSil = 0; tnHist.push(f); if (tnHist.length > 5) tnHist.shift(); const s = [...tnHist].sort((x, y) => x - y); tnUpdate(s[s.length >> 1]); }
+    if (tnWait && now < tnWait) return;
+    if (f > 0) { tnSil = 0; tnHist.push(f); if (tnHist.length > 3) tnHist.shift(); const s = [...tnHist].sort((x, y) => x - y); tnUpdate(s[s.length >> 1]); }
     else if (++tnSil > 40 && tnHist.length) { tnHist = []; tnIn = 0; tnIdle(); }   // dernière note affichée 2 s après la fin du son
   }
   const tnMsg = t => { const m = el('tl-msg'); if (m && m.textContent !== t) m.textContent = t; };
@@ -175,7 +187,8 @@ const Tools = (() => {
         hp.type = 'highpass'; hp.frequency.value = 50; lp.type = 'lowpass'; lp.frequency.value = 1200;
         src.connect(hp); hp.connect(lp); lp.connect(tnAn); tnAn.connect(mute); mute.connect(tnCtx.destination);
         tnCtx.resume().catch(() => {});
-        tnOn = true; tnHeard = performance.now(); tnMsg(''); tnChips(); tnIdle();
+        if (!tnAuto) { tnSel = 0; tnDone = []; }
+        tnWait = 0; tnOn = true; tnHeard = performance.now(); tnMsg(''); tnChips(); tnIdle();
         cancelAnimationFrame(tnRaf); tnRaf = requestAnimationFrame(tnLoop);
       })
       .catch(() => { tnStop(); tnMsg('Micro indisponible : accès refusé, ou page ouverte sans HTTPS. Autorisez le micro pour ce site dans les réglages du navigateur, ou utilisez la note de référence.'); });
@@ -215,7 +228,7 @@ const Tools = (() => {
       <small class="muted tl-diag" id="tl-diag"></small>
       <div class="tl-ctl"><button class="tl-b" data-tl="mic" id="tl-mic"></button><button class="tl-b" data-tl="auto" id="tl-auto"></button><button class="tl-b" data-tl="tone" id="tl-tone">🔊 Note de référence</button></div>
       <small class="muted" id="tl-msg"></small>
-      <p class="muted">Accordage standard (Mi La Ré Sol Si Mi). En mode Auto, la corde la plus proche de la note jouée est choisie toute seule ; une corde tenue juste environ une seconde reçoit un ✓.</p>
+      <p class="muted">Accordage standard (Mi La Ré Sol Si Mi). L'accordeur commence par le Mi grave et passe tout seul à la corde suivante dès que la corde est juste. En mode Auto, il reconnaît la corde jouée, dans n'importe quel ordre.</p>
     </div>`;
   }
 
@@ -412,9 +425,9 @@ const Tools = (() => {
     else if (k === 'ms') st.snd = !st.snd;
     else if (k === 'mf') st.fl = !st.fl;
     else if (k === 'mic') { if (tnOn) tnStop(); else tnStart(); return; }
-    else if (k === 'auto') { tnAuto = !tnAuto; tnChips(); if (!tnOn) tnIdle(); return; }
+    else if (k === 'auto') { tnAuto = !tnAuto; tnWait = 0; tnChips(); tnIdle(); return; }
     else if (k === 'tone') { tnTone(); return; }
-    else if (k === 's') { tnSel = +v; tnAuto = false; tnHist = []; tnIn = 0; tnChips(); tnIdle(); return; }
+    else if (k === 's') { tnSel = +v; tnAuto = false; tnDone[tnSel] = false; tnWait = 0; tnHist = []; tnIn = 0; tnChips(); tnIdle(); return; }
     save(); metroUI(); drawScales();
   }
   document.addEventListener('click', e => { const b = e.target.closest('[data-tl]'); if (b) act(b.dataset.tl); });

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="JamHit">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#db2777"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g)"/>
+  <!-- Note de musique en forme de J -->
+  <path d="M292 104v204a84 84 0 1 1-48-76V104z" fill="#fff"/>
+  <!-- Le « hit » : trois éclats -->
+  <g stroke="#fde68a" stroke-width="24" stroke-linecap="round" fill="none">
+    <path d="M346 150l56-38"/>
+    <path d="M362 216h66"/>
+    <path d="M346 282l56 38"/>
+  </g>
+</svg>

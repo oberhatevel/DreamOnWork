@@ -225,10 +225,9 @@ function route() {
 }
 function render() {
   const { page, id } = route();
-  $('#brand-name').textContent = state.band.name || 'Mon groupe';
-  $('#brand-logo').src = state.band.logo || 'icon.svg';
+  $('#brand-name').innerHTML = `<b>Jam<i>Hit</i></b><span class="brand-band">${esc(state.band.name || 'Mon groupe')}</span>`;
   $('.top').style.backgroundImage = state.band.background ? `linear-gradient(rgba(20,14,40,.72), rgba(20,14,40,.72)), url("${state.band.background}")` : '';
-  document.title = (state.band.name || 'Groupe') + ' — Work';
+  document.title = 'JamHit — ' + (state.band.name || 'Mon groupe');
   $('#me-select').innerHTML = `<option value="">—</option>` + state.musicians.map(m => `<option value="${m.id}" ${m.id === me ? 'selected' : ''}>${esc(m.firstName)}</option>`).join('');
   const tab = { sets: 'set', songs: 'song' }[page] || page;
   $$('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));

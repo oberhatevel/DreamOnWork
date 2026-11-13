@@ -21,7 +21,10 @@ h3 { font-size: 1rem; margin: 0; }
 .top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .6rem 1rem; padding-top: max(.6rem, env(safe-area-inset-top)); background: #1b1530; color: #fff; }
 .brand { display: flex; align-items: center; gap: .6rem; color: #fff; text-decoration: none; font-weight: 700; font-size: 1.1rem; min-width: 0; }
 .brand img { height: 36px; width: 36px; object-fit: contain; border-radius: 8px; }
-.brand span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand b { font-weight: 800; letter-spacing: -.01em; }
+.brand b i { font-style: normal; color: #f472b6; }
+.brand-band { font-weight: 500; opacity: .85; margin-left: .5rem; padding-left: .5rem; border-left: 1px solid rgba(255, 255, 255, .35); }
 #sync-ind { text-decoration: none; font-size: 1.1rem; margin-left: auto; }
 .me { font-size: .8rem; color: #cfc8e6; display: flex; align-items: center; gap: .4rem; white-space: nowrap; }
 .me select { width: auto; padding: .3rem .4rem; background: #2c2447; color: #fff; border-color: #4a3f6e; }

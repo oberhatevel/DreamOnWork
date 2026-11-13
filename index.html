@@ -2,46 +2,82 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Dream On Work</title>
-<meta name="description" content="Organisation des répétitions et concerts du groupe">
-<meta name="theme-color" content="#1b1530">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="style.css?v=__V__">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JamHit — le carnet de bord des groupes de musique</title>
+<meta name="description" content="Répertoire, sets, qui joue quoi, fiches PDF : JamHit organise les répétitions et les concerts de votre groupe, même sans réseau.">
+<meta name="theme-color" content="#6d3fd1">
+<link rel="icon" href="site/jamhit-logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="site/site.css">
 </head>
 <body>
-<header class="top">
-  <a class="brand" href="#/sets"><img id="brand-logo" alt=""><span id="brand-name"></span></a>
-  <a id="sync-ind" href="#/data" hidden></a>
-  <label class="me">Je suis <select id="me-select"></select></label>
+<header class="wrap nav">
+  <a class="brand" href="./"><img src="site/jamhit-logo.svg" alt=""><span>Jam<span>Hit</span></span></a>
+  <nav>
+    <a href="#fonctions">Fonctions</a>
+    <a href="tutoriel.html">Tutoriel</a>
+    <a class="btn primary small" href="app/">Ouvrir l'application</a>
+  </nav>
 </header>
-<nav class="tabs" id="tabs">
-  <a href="#/sets" data-tab="set">Sets</a>
-  <a href="#/songs" data-tab="song">Morceaux</a>
-  <a href="#/musicians" data-tab="musicians">Musiciens</a>
-  <a href="#/band" data-tab="band">Groupe</a>
-  <a href="#/data" data-tab="data">Données</a>
-</nav>
-<main id="view"></main>
-<div id="offline" hidden>Hors ligne — les données sont enregistrées sur cet appareil</div>
 
-<dialog id="dlg">
-  <form id="dlg-form">
-    <h2 id="dlg-title"></h2>
-    <div id="dlg-body"></div>
-    <div class="dlg-actions">
-      <button type="button" class="btn ghost" data-act="dlg-cancel">Annuler</button>
-      <button type="submit" class="btn primary" id="dlg-ok">Enregistrer</button>
+<main>
+  <div class="wrap hero">
+    <div>
+      <h1>On gère le bazar.<br><em>Vous jouez.</em></h1>
+      <p>JamHit est le carnet de bord de votre groupe : le répertoire, les sets de répétition et de concert, qui joue quoi sur chaque morceau, et la fiche de chacun prête à imprimer. Sur téléphone, tablette ou ordinateur, même sans réseau.</p>
+      <div class="cta">
+        <a class="btn primary" href="app/">Ouvrir l'application</a>
+        <a class="btn" href="tutoriel.html">Voir le tutoriel</a>
+      </div>
     </div>
-  </form>
-</dialog>
+    <img class="shot" src="site/ecran-set.png" alt="Un set de concert dans JamHit : affiche, musiciens et liste des morceaux" width="420" height="760">
+  </div>
 
-<section id="print-area"></section>
-<input type="file" id="import-file" accept=".json,.csv,application/json,text/csv" hidden>
-<script src="seed-songs.js?v=__V__"></script>
-<script src="sync.js?v=__V__"></script>
-<script src="app.js?v=__V__"></script>
+  <section class="band" id="fonctions">
+    <div class="wrap">
+      <h2>Tout ce dont un groupe a besoin entre deux séances</h2>
+      <p class="lead">Fini les set lists éparpillées entre messages, tableurs et feuilles volantes. Chaque information est saisie une fois et se retrouve partout.</p>
+      <div class="grid">
+        <div class="card"><div class="ico">🎼</div><h3>Le répertoire</h3><p>Chaque morceau avec son tempo, sa tonalité et son capo, l'ordre d'entrée, les solos, ses partitions et ses enregistrements.</p></div>
+        <div class="card"><div class="ico">🎤</div><h3>Qui joue quoi</h3><p>Chanteur lead, chœurs, instrument de chacun et sa note personnelle (son, effet, accordage), morceau par morceau.</p></div>
+        <div class="card"><div class="ico">📋</div><h3>Les sets</h3><p>Répétition ou concert : choisissez les morceaux dans le répertoire, glissez-les dans l'ordre, ajoutez l'affiche et les remarques.</p></div>
+        <div class="card"><div class="ico">🖨️</div><h3>La fiche de chacun</h3><p>Un PDF par musicien avec ses instruments et ses notes pour tout le set, ou une fiche générale pour le groupe.</p></div>
+        <div class="card"><div class="ico">🎸</div><h3>Les outils d'entraînement</h3><p>Métronome avec tempo des morceaux, accordeur de guitare au micro, gammes, modes et accords CAGED sur tout le manche.</p></div>
+        <div class="card"><div class="ico">📴</div><h3>Même sans réseau</h3><p>L'application s'installe sur l'écran d'accueil et fonctionne hors ligne, au local de répétition comme sur scène.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Comment ça marche</h2>
+      <p class="lead">Trois étapes, et tout le groupe a la même information.</p>
+      <ol class="steps">
+        <li><b>Remplissez le répertoire</b><span>Ajoutez vos morceaux un par un ou importez-les depuis un tableur. Les fiches s'enrichissent au fil des répétitions.</span></li>
+        <li><b>Préparez le prochain set</b><span>Cochez les morceaux de la séance, mettez-les dans l'ordre : chacun sait quoi travailler d'ici là.</span></li>
+        <li><b>Partagez avec le groupe</b><span>Un nom de groupe et un code d'accès : les modifications de chacun arrivent sur les appareils des autres.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <h2>Vos données restent les vôtres</h2>
+      <div class="grid">
+        <div class="card"><div class="ico">📱</div><h3>Sur votre appareil d'abord</h3><p>Chaque appareil garde sa copie complète. Rien n'est bloqué si le serveur ou le réseau est indisponible.</p></div>
+        <div class="card"><div class="ico">☁️</div><h3>Synchronisées si vous le voulez</h3><p>La synchronisation en ligne est facultative et protégée par le code d'accès du groupe.</p></div>
+        <div class="card"><div class="ico">💾</div><h3>Exportables à tout moment</h3><p>Un fichier JSON complet pour la sauvegarde, ou des fichiers CSV lisibles dans un tableur.</p></div>
+      </div>
+      <p style="margin-top:1.8rem"><a class="btn primary" href="app/">Ouvrir l'application</a></p>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap">JamHit — application web pour groupes de musique. <a href="tutoriel.html">Tutoriel</a> · <a href="app/">Application</a></div></footer>
+<script>
+// L'application a déménagé dans app/ : on retire l'ancien mode hors ligne qui couvrait tout le site.
+if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) {
+  rs.forEach(function (r) { if (new URL(r.scope).pathname === new URL('./', location.href).pathname) r.unregister(); });
+}).catch(function () {});
+</script>
 </body>
 </html>

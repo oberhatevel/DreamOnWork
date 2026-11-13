@@ -144,3 +144,69 @@ dialog::backdrop { background: rgba(10, 6, 20, .6); }
 .poster-thumb { width: 54px; height: 72px; flex: none; object-fit: cover; border-radius: 8px; }
 
 #song-list.filtering .grip, #song-list.filtering .reorder { display: none; }
+
+/* ---- Onglet Outils : tempo, accordeur, accords et gammes ---- */
+main:has(.tl-scales) { max-width: 1400px; }
+.tl-sub { display: flex; align-items: center; gap: .4rem; margin-bottom: .9rem; flex-wrap: wrap; }
+.tl-sub a { text-decoration: none; font-weight: 600; font-size: .92rem; padding: .45rem .9rem; border-radius: 99px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
+.tl-sub a.on { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.tl-mini { margin-left: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .9rem; color: var(--muted); }
+.tl-mini .tl-b { min-height: 34px; padding: .2rem .7rem; }
+.tl-b { font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: .5rem .8rem; min-height: 40px; cursor: pointer; }
+.tl-b.on { background: var(--text); color: var(--card); border-color: var(--text); }
+.tl-b:focus-visible { outline: 3px solid #3b82f6; outline-offset: 2px; }
+.tl-ctl { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: center; align-items: center; }
+/* Tempo */
+.tl-tempo, .tl-tuner { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: .9rem; }
+.tl-bpm { text-align: center; line-height: 1; position: relative; }
+.tl-bpm b { font-size: 5rem; font-variant-numeric: tabular-nums; }
+.tl-bpm small { display: block; color: var(--muted); font-size: .9rem; letter-spacing: .1em; margin-top: .2rem; }
+#tl-dot { position: absolute; top: .4rem; right: .4rem; width: 18px; height: 18px; border-radius: 50%; background: #f59e0b; opacity: .25; }
+.tl-play { width: 76px; height: 76px; border-radius: 50%; font-size: 1.7rem; background: var(--accent) !important; border-color: var(--accent) !important; color: var(--accent-text) !important; }
+.tl-tempo input[type=range] { width: 100%; accent-color: #f59e0b; padding: 0; border: 0; background: transparent; }
+#tl-fl { position: fixed; inset: 0; background: #f59e0b; opacity: 0; pointer-events: none; z-index: 20; }
+/* Accordeur */
+.tl-tuner .tl-ctl .tl-b { min-width: 46px; }
+.tl-tuner .tl-b small { display: block; font-size: .65rem; opacity: .7; }
+.tl-tuner .tl-b.ok b { color: #22c55e; }
+.tl-note { text-align: center; font-size: 3rem; font-weight: 700; line-height: 1; }
+.tl-note small { display: block; font-size: .9rem; font-weight: 500; color: var(--muted); margin-top: .3rem; min-height: 1.2em; }
+.tl-meter { position: relative; height: 50px; border: 1px solid var(--line); border-radius: 8px; background: repeating-linear-gradient(90deg, var(--line) 0 2px, transparent 2px 10%); overflow: hidden; }
+.tl-meter .z { position: absolute; left: 45%; width: 10%; top: 0; bottom: 0; background: rgba(34, 197, 94, .25); }
+.tl-meter .needle { position: absolute; top: 0; bottom: 0; left: 50%; width: 5px; margin-left: -2.5px; border-radius: 3px; background: var(--muted); transition: left .12s linear, background .12s; }
+.tl-meter .l, .tl-meter .r { position: absolute; top: 50%; transform: translateY(-50%); font-size: 1.3rem; color: var(--muted); }
+.tl-meter .l { left: 8px; } .tl-meter .r { right: 8px; }
+.tl-stat { text-align: center; min-height: 2.8em; color: var(--muted); }
+/* Accords et gammes */
+.tl-scales { --tl-board: #2b1a12; --tl-fret: #a9a392; --tl-str: #d9d3c1; --tl-ghost: #8b7b6a; display: flex; flex-direction: column; gap: .5rem; }
+.tl-head { display: flex; flex-wrap: wrap; gap: .5rem .9rem; align-items: center; }
+.tl-nav { display: flex; align-items: center; gap: .5rem; margin-right: auto; }
+#tl-title { font-size: 1.25rem; font-weight: 700; min-width: 11ch; }
+#tl-title small { display: block; font-size: .75rem; font-weight: 500; color: var(--muted); }
+.tl-arrow { width: 44px; font-size: 1.25rem; padding: 0; }
+.tl-seg { display: flex; }
+.tl-seg .tl-b { border-radius: 0; margin-left: -1px; }
+.tl-seg .tl-b:first-child { border-radius: 8px 0 0 8px; margin: 0; }
+.tl-seg .tl-b:last-child { border-radius: 0 8px 8px 0; }
+.tl-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.tl-row::-webkit-scrollbar { display: none; }
+.tl-row .tl-b { flex: none; padding: .35rem .75rem; min-height: 36px; }
+.tl-dotc { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.tl-chords { font-size: .82rem; color: var(--muted); }
+.tl-chords b { color: var(--text); }
+#tl-board { touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+#tl-board svg { width: 100%; height: auto; display: block; }
+.tl-hint { display: none; font-size: .82rem; color: var(--muted); }
+@media (orientation: portrait) and (max-width: 600px) { .tl-hint { display: block; } }
+.tl-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .6rem; align-items: center; font-size: .82rem; color: var(--muted); }
+#tl-info, #tl-mbtn { display: none; }
+/* Plein écran : seul le manche reste, avec le rappel de la gamme et le mini-métronome */
+body.tl-full { padding-bottom: 0; }
+body.tl-full .top, body.tl-full .tabs, body.tl-full #offline, body.tl-full .tl-sub a,
+body.tl-full .tl-head, body.tl-full .tl-row, body.tl-full .tl-hint, body.tl-full .tl-foot, body.tl-full .tl-chords { display: none !important; }
+body.tl-full main { max-width: none; padding: 0 .5rem; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; }
+body.tl-full #tl-board svg { max-height: 100dvh; }
+body.tl-full #tl-info { display: block; white-space: pre-line; position: fixed; top: calc(env(safe-area-inset-top, 0px) + 8px); left: 12px; z-index: 5; font-weight: 700; font-size: 1rem; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: .35rem .6rem; opacity: .85; }
+body.tl-full #tl-mbtn { display: block; position: fixed; top: calc(env(safe-area-inset-top, 0px) + 8px); right: 10px; z-index: 5; opacity: .7; min-height: 36px; padding: .35rem .6rem; }
+body.tl-full .tl-sub { margin: 0; }
+body.tl-full .tl-mini { position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); left: 50%; transform: translateX(-50%); z-index: 5; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: .25rem .6rem; opacity: .9; }

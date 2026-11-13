@@ -3,7 +3,8 @@
 Application web hors ligne (PWA) pour organiser les répétitions et concerts d'un groupe de musique :
 morceaux, musiciens, groupe et sets, avec édition d'une fiche PDF par musicien.
 
-- **Sans installation ni compte** : fichiers statiques (`index.html`, `app.js`, `style.css`), aucun serveur applicatif.
+- **Organisation** : la racine contient les pages publiques (`index.html` présentation, `tutoriel.html`, `site/`), l'application est dans `app/`, la synchronisation dans `api/`.
+- **Onglet Outils** (`app/tools.js`) : métronome, accordeur de guitare, accords et gammes sur le manche.
 - **Hors ligne** : après une première visite, l'application fonctionne sans réseau (service worker) et peut être installée sur l'écran d'accueil.
 - **Données** : enregistrées sur l'appareil (localStorage pour les fiches, IndexedDB pour les fichiers joints).
   Partage entre musiciens par export / import **JSON** (complet, fichiers inclus) ou **CSV** (morceaux, musiciens, sets).
@@ -12,7 +13,7 @@ morceaux, musiciens, groupe et sets, avec édition d'une fiche PDF par musicien.
 ## Lancer en local
 
 ```sh
-python3 -m http.server 8000   # puis ouvrir http://localhost:8000
+python3 -m http.server 8000   # puis ouvrir http://localhost:8000/app/
 ```
 
 ## Mise en ligne

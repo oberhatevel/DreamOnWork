@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Numéro de version (pour que les navigateurs chargent la mise à jour)
-        run: sed -i "s/__V__/${GITHUB_SHA::7}/g" index.html sw.js
+        run: sed -i "s/__V__/${GITHUB_SHA::7}/g" app/index.html app/sw.js
       - name: Envoyer les fichiers sur l'hébergement
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
@@ -57,7 +57,9 @@ jobs:
 
           # Envoi dans www/ (racine du site). Aucun fichier distant n'est supprimé.
           COMMON="set net:max-retries 2; set net:timeout 15; set net:reconnect-interval-base 5; set cmd:fail-exit yes; debug 3;"
-          MIRROR="mirror --reverse --only-newer --no-perms --verbose dist www; bye"
+          # Anciens fichiers de l'application à la racine (elle est maintenant dans app/) : retirés pour ne laisser aucune copie périmée.
+          OLD="rm -f www/app.js www/sync.js www/seed-songs.js www/style.css www/sw.js www/manifest.webmanifest www/accueil.html www/icon.svg www/icon-192.png www/icon-512.png; rm -rf www/posters;"
+          MIRROR="mirror --reverse --only-newer --no-perms --verbose dist www; set cmd:fail-exit no; $OLD bye"
           echo "::group::Essai SFTP (port 22)"
           if timeout 150 lftp -e "$COMMON set sftp:auto-confirm yes; open --env-password -u $USER_ sftp://$HOST; $MIRROR" < /dev/null; then
             echo "::endgroup::"; echo "Envoi réussi par SFTP."; exit 0
@@ -74,7 +76,8 @@ jobs:
       - name: Vérifier le site en ligne
         run: |
           check() { code=$(curl -s -o /tmp/out -w '%{http_code}' -m 20 "$2" || true); echo "$1 : HTTP $code — $(head -c 160 /tmp/out | tr '\n' ' ')"; }
-          check "Accueil (attendu 200)" "https://jamhit.fr/"
+          check "Présentation (attendu 200)" "https://jamhit.fr/"
+          check "Application (attendu 200)" "https://jamhit.fr/app/"
           check "API sans identifiants (attendu 400 bad_band : PHP et base joignables)" "https://jamhit.fr/api/index.php?a=ping"
           check "Fichier de configuration (attendu : réponse vide)" "https://jamhit.fr/api/config.php"
           check "Dossier des fichiers joints (attendu 403)" "https://jamhit.fr/api/files/.htaccess"

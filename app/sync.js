@@ -2,7 +2,7 @@
 /* Synchronisation en ligne : chaque appareil garde sa copie locale et échange ses changements avec le serveur.
    Règle en cas de modification des deux côtés : la fiche modifiée le plus récemment l'emporte. */
 const Sync = (() => {
-  const KEY = 'dow:sync', API = 'api/index.php';
+  const KEY = 'dow:sync', API = '../api/index.php';
   let cfg = read();
   let status = 'off', message = '', running = false, timer = null;
 

@@ -11,10 +11,10 @@
 </head>
 <body>
 <header class="wrap nav">
-  <a class="brand" href="accueil.html"><img src="site/jamhit-logo.svg" alt=""><span>Jam<span>Hit</span></span></a>
+  <a class="brand" href="./"><img src="site/jamhit-logo.svg" alt=""><span>Jam<span>Hit</span></span></a>
   <nav>
-    <a href="accueil.html">Présentation</a>
-    <a class="btn primary small" href="./">Ouvrir l'application</a>
+    <a href="./">Présentation</a>
+    <a class="btn primary small" href="app/">Ouvrir l'application</a>
   </nav>
 </header>
 
@@ -29,6 +29,7 @@
       <li><a href="#sets">Préparer un set</a></li>
       <li><a href="#pdf">La fiche PDF</a></li>
       <li><a href="#fichiers">Partitions et enregistrements</a></li>
+      <li><a href="#outils">Les outils d'entraînement</a></li>
       <li><a href="#sync">Synchroniser le groupe</a></li>
       <li><a href="#sauvegarde">Sauvegarder et importer</a></li>
       <li><a href="#questions">Questions fréquentes</a></li>
@@ -37,7 +38,7 @@
 
   <main>
     <h1>Prise en main</h1>
-    <p>Dix minutes suffisent pour préparer la prochaine répétition. L'application comporte cinq onglets : <kbd>Sets</kbd>, <kbd>Morceaux</kbd>, <kbd>Musiciens</kbd>, <kbd>Groupe</kbd> et <kbd>Données</kbd>. Tout ce que vous saisissez est enregistré immédiatement, sans bouton « Sauvegarder ».</p>
+    <p>Dix minutes suffisent pour préparer la prochaine répétition. L'application comporte six onglets : <kbd>Sets</kbd>, <kbd>Morceaux</kbd>, <kbd>Musiciens</kbd>, <kbd>Groupe</kbd>, <kbd>Outils</kbd> et <kbd>Données</kbd>. Tout ce que vous saisissez est enregistré immédiatement, sans bouton « Sauvegarder ».</p>
 
     <h2 id="installer">1. Installer l'application</h2>
     <p>JamHit s'utilise dans le navigateur, mais il est préférable de l'ajouter à l'écran d'accueil : elle s'ouvre alors comme une application et fonctionne sans réseau.</p>
@@ -89,7 +90,17 @@
     <p>Sur la fiche d'un morceau (liens vidéo, partitions, enregistrements) ou d'un set (enregistrements, photos), le bouton <kbd>+ Ajouter</kbd> accepte un lien (YouTube, Drive…) ou un fichier de votre appareil, avec un libellé et une date.</p>
     <div class="tip">Pour les vidéos, préférez un lien : elles sont trop volumineuses pour être stockées dans l'application.</div>
 
-    <h2 id="sync">8. Synchroniser le groupe</h2>
+    <h2 id="outils">8. Les outils d'entraînement</h2>
+    <p>L'onglet <kbd>Outils</kbd> regroupe trois aides pour travailler entre deux séances.</p>
+    <ul>
+      <li><b>Tempo</b> : un métronome de 30 à 240 BPM. Réglez-le au curseur, avec <kbd>Tap</kbd> en tapant le rythme, ou reprenez directement le tempo d'un morceau du répertoire. Son et flash lumineux au choix.</li>
+      <li><b>Accordeur</b> : appuyez sur <kbd>Écouter</kbd>, autorisez le micro, puis jouez une corde à vide. L'aiguille indique s'il faut tendre ou détendre. La note de référence peut aussi être jouée.</li>
+      <li><b>Accords et gammes</b> : le manche complet avec les positions de la pentatonique, des modes, de la gamme blues et les formes d'accords CAGED, dans toutes les tonalités. Glissez sur le manche pour changer de tonalité ; <kbd>Plein écran</kbd> ne garde que le manche.</li>
+    </ul>
+    <figure><img src="site/ecran-gammes.png" alt="Le manche de guitare avec les positions de la pentatonique mineure de La" width="1000" height="560"><figcaption>La pentatonique mineure de La, une couleur par position.</figcaption></figure>
+    <div class="tip">Le métronome continue quand vous passez du tempo aux gammes : un bouton pause reste affiché à côté des sous-onglets.</div>
+
+    <h2 id="sync">9. Synchroniser le groupe</h2>
     <p>Sans synchronisation, chaque appareil garde ses propres données. Pour que tout le groupe voie la même chose :</p>
     <ol>
       <li>Onglet <kbd>Données</kbd>, section « Synchronisation en ligne ».</li>
@@ -104,14 +115,14 @@
       <li>Le code d'accès donne le droit de tout lire et de tout modifier : ne le communiquez qu'aux membres du groupe.</li>
     </ul>
 
-    <h2 id="sauvegarde">9. Sauvegarder et importer</h2>
+    <h2 id="sauvegarde">10. Sauvegarder et importer</h2>
     <ul>
       <li><b>Tout (JSON, avec fichiers)</b> : une copie complète, à conserver hors de l'appareil. C'est aussi le moyen de transmettre les données sans synchronisation.</li>
       <li><b>CSV</b> : morceaux, musiciens ou sets dans un fichier lisible par un tableur, sans les fichiers joints.</li>
       <li><b>Importer</b> : un fichier JSON (fusion ou remplacement) ou CSV. À l'import d'un CSV, les lignes déjà connues sont mises à jour, les autres ajoutées.</li>
     </ul>
 
-    <h2 id="questions">10. Questions fréquentes</h2>
+    <h2 id="questions">11. Questions fréquentes</h2>
     <p><b>Je ne vois pas la dernière version de l'application.</b><br>Rechargez la page une ou deux fois avec du réseau. Le numéro de version figure en bas de l'onglet Données.</p>
     <p><b>J'ai modifié un morceau dans un set : est-il modifié ailleurs ?</b><br>Oui. Un morceau est une fiche unique, partagée par le répertoire et tous les sets.</p>
     <p><b>Puis-je effacer les données du site dans mon navigateur ?</b><br>Seulement si l'appareil est synchronisé ou après un export JSON : sinon vos saisies sont perdues.</p>
@@ -119,6 +130,6 @@
   </main>
 </div>
 
-<footer><div class="wrap">JamHit — application web pour groupes de musique. <a href="accueil.html">Présentation</a> · <a href="./">Application</a></div></footer>
+<footer><div class="wrap">JamHit — application web pour groupes de musique. <a href="./">Présentation</a> · <a href="app/">Application</a></div></footer>
 </body>
 </html>

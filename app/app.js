@@ -232,9 +232,10 @@ function render() {
   $('#me-select').innerHTML = `<option value="">—</option>` + state.musicians.map(m => `<option value="${m.id}" ${m.id === me ? 'selected' : ''}>${esc(m.firstName)}</option>`).join('');
   const tab = { sets: 'set', songs: 'song' }[page] || page;
   $$('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));
-  const pages = { sets: vSets, set: vSet, songs: vSongs, song: vSong, musicians: vMusicians, band: vBand, data: vData };
+  const pages = { sets: vSets, set: vSet, songs: vSongs, song: vSong, musicians: vMusicians, band: vBand, data: vData, tools: Tools.view };
   view.innerHTML = (pages[page] || vSets)(id);
   hydrateFiles(view);
+  if (page === 'tools') Tools.mount(id); else Tools.leave();
   const q = $('#song-search');
   if (q) q.addEventListener('input', () => { filterList(q.value, '#song-list > *'); $('#song-list').classList.toggle('filtering', !!q.value.trim()); });
 }
@@ -394,7 +395,7 @@ function vData() {
     <h2>Réinitialiser</h2>
     <div class="card"><button class="btn danger" data-act="reset">Effacer toutes les données de cet appareil</button></div>
     <h2>Aide</h2>
-    <div class="card"><div class="actions"><a class="btn" href="tutoriel.html">Tutoriel</a><a class="btn" href="accueil.html">Présentation de JamHit</a></div></div>
+    <div class="card"><div class="actions"><a class="btn" href="../tutoriel.html">Tutoriel</a><a class="btn" href="../">Présentation de JamHit</a></div></div>
     <p class="muted">Version de l'application : ${esc(v)}</p>`;
 }
 const notFound = back => `<div class="empty">Élément introuvable. <a href="${back}">Retour</a></div>`;

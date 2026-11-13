@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dream On Work</title>
+<meta name="description" content="Organisation des répétitions et concerts du groupe">
+<meta name="theme-color" content="#1b1530">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css?v=__V__">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/sets"><img id="brand-logo" alt=""><span id="brand-name"></span></a>
+  <a id="sync-ind" href="#/data" hidden></a>
+  <label class="me">Je suis <select id="me-select"></select></label>
+</header>
+<nav class="tabs" id="tabs">
+  <a href="#/sets" data-tab="set">Sets</a>
+  <a href="#/songs" data-tab="song">Morceaux</a>
+  <a href="#/musicians" data-tab="musicians">Musiciens</a>
+  <a href="#/band" data-tab="band">Groupe</a>
+  <a href="#/tools" data-tab="tools">Outils</a>
+  <a href="#/data" data-tab="data">Données</a>
+</nav>
+<main id="view"></main>
+<div id="offline" hidden>Hors ligne — les données sont enregistrées sur cet appareil</div>
+
+<dialog id="dlg">
+  <form id="dlg-form">
+    <h2 id="dlg-title"></h2>
+    <div id="dlg-body"></div>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" data-act="dlg-cancel">Annuler</button>
+      <button type="submit" class="btn primary" id="dlg-ok">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
+
+<section id="print-area"></section>
+<input type="file" id="import-file" accept=".json,.csv,application/json,text/csv" hidden>
+<script src="seed-songs.js?v=__V__"></script>
+<script src="sync.js?v=__V__"></script>
+<script src="tools.js?v=__V__"></script>
+<script src="app.js?v=__V__"></script>
+</body>
+</html>

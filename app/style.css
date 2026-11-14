@@ -231,11 +231,15 @@ body.tl-full #demo-banner { display: none; }
 .tl-diag { text-align: center; font-size: .72rem; min-height: 1em; font-variant-numeric: tabular-nums; }
 
 /* ---- Paroles et accords (fiche du morceau) ---- */
-.chart, .chart-input { font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace; font-size: .92rem; line-height: 1.45; }
+.chart, .chart-input { font-family: 'JH Mono', ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace; font-size: .92rem; line-height: 1.45; }
 .chart-input { min-height: 12rem; white-space: pre; overflow-x: auto; }
 .chart { overflow-x: auto; white-space: pre; }
 
 /* ---- Mode scène (Live View) ---- */
+/* JetBrains Mono (licence SIL OFL, fonts/JetBrainsMono-OFL.txt) : chasse fixe très lisible, embarquée pour fonctionner hors ligne */
+@font-face { font-family: 'JH Mono'; src: url('fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'JH Mono'; src: url('fonts/jetbrains-mono-latin-700-normal.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'JH Mono'; src: url('fonts/jetbrains-mono-latin-800-normal.woff2') format('woff2'); font-weight: 800; font-display: swap; }
 html.lv-open, html.lv-open body { overflow: hidden; }
 #lv { position: fixed; inset: 0; z-index: 50; background: #000; color: #f3f3f3; display: flex; flex-direction: column;
   padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0); }
@@ -257,13 +261,19 @@ html.lv-open, html.lv-open body { overflow: hidden; }
 .lv-play { min-width: 64px; font-size: 1.3rem; }
 .lv-grp { display: inline-flex; align-items: center; gap: .3rem; color: #a9a3b8; font-size: .85rem; font-variant-numeric: tabular-nums; }
 .lv-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 1.2rem 1rem 0; }
-.lv-text { max-width: 60em; margin: 0 auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace; line-height: 1.45; }
+.lv-text { max-width: 60em; margin: 0 auto; font-family: 'JH Mono', ui-monospace, Menlo, Consolas, monospace; font-weight: 700; line-height: 1.5; color: #fff; letter-spacing: .01em; font-variant-ligatures: none; }
 .lv-l { white-space: pre; }   /* pas de retour à la ligne : les accords restent au-dessus des bonnes syllabes */
-.lv-ch { color: #f5b531; font-weight: 700; }
-.lv-sec { color: #b79bff; font-weight: 800; margin-top: .4em; text-transform: uppercase; letter-spacing: .04em; font-size: .8em; }
+.lv-ch { color: #ffc940; font-weight: 800; }
+.lv-wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+.lv-pair { margin-bottom: .15em; }
+.lv-sec { white-space: normal; color: #c6b0ff; font-weight: 800; margin-top: .5em; text-transform: uppercase; letter-spacing: .05em; font-size: .78em; font-family: system-ui, -apple-system, sans-serif; }
 .lv-empty { height: .7em; }
 .lv-note { color: #a9a3b8; font-family: system-ui, sans-serif; font-size: max(.6em, 15px); margin: .5em 0 1em; white-space: normal; }
 .lv-end { min-height: 55vh; display: flex; align-items: flex-start; justify-content: center; padding-top: 2rem; }
 .lv-nextsong { font-size: 1.1rem; padding: .7rem 1.2rem; }
 .lv-help { position: absolute; left: 50%; bottom: 5.5rem; transform: translateX(-50%); width: min(92vw, 520px); background: #1c1a24; border: 1px solid #34303f; border-radius: 12px; padding: .9rem 1rem; font-size: .9rem; color: #d6d2e0; }
 .lv-help p { margin: .5rem 0 0; }
+
+/* Bouton GO LIVE ! (ouvre le mode scène) */
+.btn.golive { background: linear-gradient(135deg, #713BFF, #F01486); border-color: transparent; color: #fff; font-weight: 800; letter-spacing: .03em; }
+.btn.golive svg { width: 1.25em; height: 1.25em; flex: none; }

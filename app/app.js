@@ -244,7 +244,7 @@ function vSet(id) {
     <div class="head"><div><h1>${esc(s.name)} <span class="badge ${s.type}">${TYPES[s.type]}</span></h1>
       <div class="muted">${esc(fmtDate(s.date)) || 'Date à définir'}</div></div>
       <div class="actions">
-        <button class="btn primary" data-act="live-set" data-id="${s.id}" ${songs.length ? '' : 'disabled'}>🎤 Mode scène</button>
+        <button class="btn golive" data-act="live-set" data-id="${s.id}" ${songs.length ? '' : 'disabled'} title="Mode scène : paroles et accords en grand, défilement automatique"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="19" height="13" rx="2"/><path d="M6.5 7.5h11M6.5 10.5h8M6.5 13.5h10M9 20.5h6M12 16.5v4"/></svg> GO LIVE !</button>
         <button class="btn primary" data-act="set-print" data-id="${s.id}">PDF</button>
         <button class="btn" data-act="set-edit" data-id="${s.id}">Modifier</button>
         <button class="btn" data-act="set-dup" data-id="${s.id}">Dupliquer</button>
@@ -290,7 +290,7 @@ function vSong(idq) {
   const parts = state.musicians.filter(m => partLabel(x, m.id));
   return `<a class="back" href="${fromSet ? '#/set/' + fromSet.id : '#/songs'}">‹ ${fromSet ? esc(fromSet.name) : 'Morceaux'}</a>
     <div class="head"><h1>${esc(x.title)}</h1><div class="actions">
-      <button class="btn primary" data-act="live-song" data-id="${x.id}" data-set="${fromSet ? fromSet.id : ''}">🎤 Mode scène</button>
+      <button class="btn golive" data-act="live-song" data-id="${x.id}" data-set="${fromSet ? fromSet.id : ''}" title="Mode scène : paroles et accords en grand, défilement automatique"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="19" height="13" rx="2"/><path d="M6.5 7.5h11M6.5 10.5h8M6.5 13.5h10M9 20.5h6M12 16.5v4"/></svg> GO LIVE !</button>
       <button class="btn primary" data-act="song-edit" data-id="${x.id}">Modifier</button>
       <button class="btn danger" data-act="song-del" data-id="${x.id}">Supprimer</button></div></div>
     <div class="card">${info.length ? `<dl class="info">${info.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>` : '<span class="muted">Fiche à compléter : tempo, tonalité, chanteurs…</span>'}</div>

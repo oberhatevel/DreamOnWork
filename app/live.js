@@ -12,21 +12,9 @@ const Live = (() => {
   let playing = false, pos = 0, last = 0, raf = 0, leadUntil = 0, beatT0 = 0, hideT = 0, wake = null, ownScroll = false;
 
   const cur = () => song(ids[idx]);
-  // Taille automatique : la plus grande qui fait tenir la ligne la plus longue, sans descendre sous 26 px (lisibilité sur scène).
-  // Si une ligne reste trop longue, la paire accords + paroles est coupée au même endroit (voir chartHTML) : les accords restent alignés.
-  let fit = 30;
-  const sizePx = () => opt.size || fit;
-  const avail = () => Math.max(200, (el('lv-scroll') ? el('lv-scroll').clientWidth : innerWidth) - 34);
-  // Largeur réelle d'un caractère de la police (mesurée), en em
-  let cw = 0.6;
-  function measure() {
-    try { const c = document.createElement('canvas').getContext('2d'); c.font = '800 100px "JH Mono", ui-monospace, monospace'; cw = c.measureText('MMMMMMMMMM').width / 1000 || 0.6; } catch { cw = 0.6; }
-  }
-  const cols = () => Math.max(14, Math.floor(avail() / (sizePx() * cw)) - 1);
-  function fitSize(text) {
-    const longest = Math.max(18, ...String(text || '').replace(/\t/g, '    ').split('\n').map(l => l.replace(/\s+$/, '').length));
-    fit = Math.round(Math.min(48, Math.max(26, avail() / ((longest + 1) * cw))));
-  }
+  // Taille du texte : 50 px par défaut, réglable avec A− / A+ (gardée sur l'appareil), A pour revenir à 50 px.
+  const DEFAULT_SIZE = 50;
+  const sizePx = () => opt.size || DEFAULT_SIZE;
   // Durée saisie « 4:30 » ou « 270 » → secondes
   function durSec(s) {
     const m = String(s || '').trim().match(/^(\d+)(?::(\d{1,2}))?$/);
@@ -43,39 +31,47 @@ const Live = (() => {
     return n / toks.length >= 0.7;
   }
   // Coupe une ligne d'accords et sa ligne de paroles aux mêmes colonnes, de préférence entre deux mots.
-  function splitPair(ch, ly, n) {
-    const out = [], free = (str, k) => k >= str.length || k <= 0 || str[k] === ' ' || str[k - 1] === ' ';
-    while (ch.length > n || ly.length > n) {
-      // Coupure : entre deux mots des paroles, sans couper un accord ; à défaut, au plus près de la largeur.
-      let k = 0;
-      for (let i = Math.min(n, Math.max(ch.length, ly.length)); i > 0 && !k; i--) if ((i >= ly.length || ly[i] === ' ') && free(ch, i)) k = i;
-      if (!k) for (let i = n; i > 0 && !k; i--) if (free(ch, i)) k = i;
-      if (!k) k = n;
-      out.push([ch.slice(0, k), ly.slice(0, k)]);
-      ch = ch.slice(k); ly = ly.slice(k);
-      const pad = Math.min(ch.length - ch.trimStart().length, ly.length - ly.trimStart().length);   // retrait commun retiré
-      ch = ch.slice(pad); ly = ly.slice(pad);
-      if (!ch.trim()) { ch = ''; ly = ly.trimStart(); }   // plus d'accord sur la suite : paroles recalées à gauche
-    }
-    out.push([ch, ly]);
-    return out;
-  }
 
+  // Paire « ligne d'accords + ligne de paroles » → suite de blocs mot par mot ; un accord est posé sur le mot
+  // (ou le morceau de mot) qui commence à sa colonne dans la saisie.
+  function pairHTML(ch, ly) {
+    const chords = [];
+    ch.replace(/\S+/g, (t, i) => {
+      let j = i; while (j < ly.length && /[\s,.;:!?…»)]/.test(ly[j])) j++;
+      if (j >= ly.length && i < ly.length) j = i;
+      chords.push([j, t]); return t;
+    });
+    const cuts = [...new Set([0, ...chords.map(c => c[0]), ly.length])].sort((a, b) => a - b);
+    let out = '';
+    for (let k = 0; k < cuts.length - 1 || (k === 0 && !ly.length); k++) {
+      const a = cuts[k], b = cuts[k + 1] ?? a, chord = (chords.find(c => c[0] === a) || [])[1] || '';
+      const seg = ly.slice(a, b);
+      // le premier mot du segment porte l'accord ; les mots suivants sont des blocs sans accord (retour à la ligne possible entre eux)
+      const words = seg.match(/\S+\s*|\s+/g) || [''];
+      words.forEach((w, n) => {
+        const c = n === 0 ? chord : '';
+        const txt = w || (c ? '\u00a0' : '');
+        out += `<span class="lv-seg${w.trim() ? '' : ' lv-gap'}">${c ? `<b class="lv-c">${esc(c)}</b>` : ''}<span class="lv-y">${esc(txt).replace(/ /g, '\u00a0')}</span></span>`;
+      });
+      if (!ly.length) break;
+    }
+    // accords placés après la fin des paroles
+    for (const [i, t] of chords) if (i >= ly.length && ly.length) out += `<span class="lv-seg"><b class="lv-c">${esc(t)}</b><span class="lv-y">\u00a0</span></span>`;
+    return `<div class="lv-pair">${out}</div>`;
+  }
   function chartHTML(text) {
-    const lines = text.replace(/\r/g, '').replace(/\t/g, '    ').split('\n').map(l => l.replace(/\s+$/, '')), n = cols(), html = [];
+    const lines = text.replace(/\r/g, '').replace(/\t/g, '    ').split('\n').map(l => l.replace(/\s+$/, '')), html = [];
     for (let i = 0; i < lines.length; i++) {
       const l = lines[i];
       if (!l.trim()) { html.push('<div class="lv-l lv-empty">&nbsp;</div>'); continue; }
       if (SECTION.test(l) && l.trim().length < 40) { html.push(`<div class="lv-l lv-sec">${esc(l.trim())}</div>`); continue; }
       if (isChordLine(l)) {
         const ly = lines[i + 1];
-        if (ly && ly.trim() && !isChordLine(ly) && !SECTION.test(ly)) {   // paire accords + paroles
-          i++;
-          html.push('<div class="lv-pair">' + splitPair(l, ly, n).map(([c, y]) => (c.trim() ? `<div class="lv-l lv-ch">${esc(c.replace(/\s+$/, ''))}</div>` : '') + `<div class="lv-l">${esc(y)}</div>`).join('') + '</div>');
-        } else html.push(`<div class="lv-l lv-ch lv-wrap">${esc(l)}</div>`);
+        if (ly && ly.trim() && !isChordLine(ly) && !SECTION.test(ly)) { i++; html.push(pairHTML(l, ly)); }
+        else html.push(`<div class="lv-grid">${l.trim().split(/\s+/).map(t => `<b class="lv-c">${esc(t)}</b>`).join('')}</div>`);   // grille d'accords seule
         continue;
       }
-      html.push(`<div class="lv-l lv-wrap">${esc(l)}</div>`);
+      html.push(`<div class="lv-l">${esc(l)}</div>`);
     }
     return html.join('');
   }
@@ -97,7 +93,7 @@ const Live = (() => {
         <button class="lv-b lv-play" data-lv="play" id="lv-play" aria-label="Lancer ou arrêter le défilement">▶</button>
         <button class="lv-b" data-lv="next" aria-label="Morceau suivant">⏭</button>
         <span class="lv-grp"><button class="lv-b" data-lv="slow" aria-label="Plus lent">−</button><span id="lv-speed"></span><button class="lv-b" data-lv="fast" aria-label="Plus rapide">+</button></span>
-        <span class="lv-grp"><button class="lv-b" data-lv="small" aria-label="Texte plus petit">A−</button><button class="lv-b" data-lv="auto" aria-label="Taille automatique">A</button><button class="lv-b" data-lv="big" aria-label="Texte plus grand">A+</button></span>
+        <span class="lv-grp"><button class="lv-b" data-lv="small" aria-label="Texte plus petit">A−</button><button class="lv-b" data-lv="auto" aria-label="Taille par défaut (50 px)">A</button><button class="lv-b" data-lv="big" aria-label="Texte plus grand">A+</button></span>
         <button class="lv-b" data-lv="help" aria-label="Aide pédale">⌨</button>
       </div>
       <div class="lv-help" id="lv-help" hidden>
@@ -121,7 +117,6 @@ const Live = (() => {
     const mine = me && part(x, me) ? [instText(part(x, me).instruments), part(x, me).note].filter(Boolean).join(' — ') : '';
     el('lv-meta').innerHTML = esc(meta.join(' · ')) + (mine ? `<br><span class="lv-mine">${esc(mName(me))} : ${esc(mine)}</span>` : '');
     el('lv-pos').textContent = ids.length > 1 ? `${idx + 1} / ${ids.length}` : '';
-    fitSize(chart);
     el('lv-text').style.fontSize = sizePx() + 'px';
     shown = chart;
     el('lv-text').innerHTML = chart
@@ -137,7 +132,7 @@ const Live = (() => {
   // ---------- Défilement ----------
   // Vitesse de base : la durée du morceau si elle est saisie, sinon une ligne de texte par mesure de 4 temps au tempo.
   function speed() {
-    const x = cur(), sc = el('lv-scroll'), lh = sizePx() * 1.45;
+    const x = cur(), sc = el('lv-scroll'), lh = sizePx() * 1.3;
     const room = Math.max(0, sc.scrollHeight - sc.clientHeight), d = durSec(x.duration), t = +x.tempo;
     const base = d > 0 ? room / d : t > 0 ? lh / (4 * 60 / t) : lh / 2.5;
     return base * (+x.liveSpeed || 1);
@@ -211,7 +206,7 @@ const Live = (() => {
     if (shown) { const note = el('lv-text').querySelector('.lv-note'); el('lv-text').innerHTML = (note ? note.outerHTML : '') + chartHTML(shown); }
     ownScroll = true; sc.scrollTop = pos = r * sc.scrollHeight;
   }
-  function setSize(d) { opt.size = Math.min(72, Math.max(20, sizePx() + d)); saveOpt(); relayout(); }
+  function setSize(d) { opt.size = Math.min(96, Math.max(20, sizePx() + d)); saveOpt(); relayout(); }
 
   // ---------- Commandes ----------
   function ctlShow(keep) {
@@ -226,9 +221,9 @@ const Live = (() => {
     if (a === 'next') return go(1);
     if (a === 'slow') return setSpeed(1 / 1.1);
     if (a === 'fast') return setSpeed(1.1);
-    if (a === 'small') return setSize(-2);
-    if (a === 'big') return setSize(2);
-    if (a === 'auto') { opt.size = 0; saveOpt(); const x = cur(); fitSize((x.chart || '').trim() || x.remarks); return relayout(); }
+    if (a === 'small') return setSize(-4);
+    if (a === 'big') return setSize(4);
+    if (a === 'auto') { opt.size = 0; saveOpt(); return relayout(); }
     if (a === 'help') { const h = el('lv-help'); h.hidden = !h.hidden; }
   }
   function onClick(e) { const b = e.target.closest('[data-lv]'); if (b) { e.stopPropagation(); act(b.dataset.lv); ctlShow(); } }
@@ -260,15 +255,13 @@ const Live = (() => {
     try { if ('wakeLock' in navigator && !wake) { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); } } catch { /* refusé ou non pris en charge */ }
   }
   const onVis = () => { if (!document.hidden && root) keepAwake(); };
-  const onResize = () => { if (!root) return; if (!opt.size) { const x = cur(); fitSize((x.chart || '').trim() || x.remarks); } relayout(); };
+  const onResize = () => { if (root) relayout(); };
 
   // ---------- Ouverture / fermeture ----------
   function open(songIds, start = 0, name = '') {
     ids = songIds.filter(id => song(id)); if (!ids.length) return;
     idx = Math.min(Math.max(0, start), ids.length - 1); title = name;
     if (!root) shell();
-    measure();
-    if (document.fonts && document.fonts.load) document.fonts.load('800 30px "JH Mono"').then(() => { measure(); if (root) onResize(); }).catch(() => {});
     document.documentElement.classList.add('lv-open');
     window.addEventListener('keydown', onKey, true);
     window.addEventListener('resize', onResize);

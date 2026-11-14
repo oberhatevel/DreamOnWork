@@ -261,12 +261,17 @@ html.lv-open, html.lv-open body { overflow: hidden; }
 .lv-play { min-width: 64px; font-size: 1.3rem; }
 .lv-grp { display: inline-flex; align-items: center; gap: .3rem; color: #a9a3b8; font-size: .85rem; font-variant-numeric: tabular-nums; }
 .lv-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 1.2rem 1rem 0; }
-.lv-text { max-width: 60em; margin: 0 auto; font-family: 'JH Mono', ui-monospace, Menlo, Consolas, monospace; font-weight: 700; line-height: 1.5; color: #fff; letter-spacing: .01em; font-variant-ligatures: none; }
-.lv-l { white-space: pre; }   /* pas de retour à la ligne : les accords restent au-dessus des bonnes syllabes */
-.lv-ch { color: #ffc940; font-weight: 800; }
-.lv-wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
-.lv-pair { margin-bottom: .15em; }
-.lv-sec { white-space: normal; color: #c6b0ff; font-weight: 800; margin-top: .5em; text-transform: uppercase; letter-spacing: .05em; font-size: .78em; font-family: system-ui, -apple-system, sans-serif; }
+.lv-text { max-width: 60em; margin: 0 auto; font-family: Arial, Helvetica, sans-serif; font-weight: 400; line-height: 1.3; color: #fff; }
+.lv-l { white-space: pre-wrap; overflow-wrap: anywhere; }
+/* Paire accords + paroles : un bloc par mot, l'accord au-dessus du mot qu'il accompagne */
+.lv-pair { display: flex; flex-wrap: wrap; align-items: flex-end; margin: .1em 0 .25em; }
+.lv-seg { display: inline-flex; flex-direction: column; }
+.lv-c { color: #ffc940; font-weight: 700; font-size: .82em; line-height: 1.15; padding-right: .35em; white-space: nowrap; }
+.lv-y { white-space: pre; }
+.lv-grid { display: flex; flex-wrap: wrap; gap: .1em .9em; margin: .1em 0 .2em; }
+.lv-grid .lv-c { font-size: 1em; padding: 0; }
+.lv-ch { color: #ffc940; font-weight: 700; }
+.lv-sec { white-space: normal; color: #c6b0ff; font-weight: 700; margin-top: .5em; text-transform: uppercase; letter-spacing: .04em; font-size: .62em; }
 .lv-empty { height: .7em; }
 .lv-note { color: #a9a3b8; font-family: system-ui, sans-serif; font-size: max(.6em, 15px); margin: .5em 0 1em; white-space: normal; }
 .lv-end { min-height: 55vh; display: flex; align-items: flex-start; justify-content: center; padding-top: 2rem; }

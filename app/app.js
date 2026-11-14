@@ -52,7 +52,7 @@ function normalize(d) {
   for (const m of Array.isArray(d.musicians) ? d.musicians : [])
     out.musicians.push({ id: m.id || uid(), firstName: m.firstName || '', instruments: Array.isArray(m.instruments) ? m.instruments : [], birthDate: m.birthDate || '', photo: m.photo || '', guest: !!m.guest, gear: gearList(m.gear) });
   for (const x of Array.isArray(d.songs) ? d.songs : [])
-    out.songs.push({ id: x.id || uid(), title: x.title || '', author: x.author || '', tempo: x.tempo || '', key: x.key || '', capo: x.capo || '', entryOrder: x.entryOrder || '', lead: x.lead || '', singer2: x.singer2 || '', solos: x.solos || '', remarks: x.remarks || '', parts: x.parts && typeof x.parts === 'object' ? x.parts : {}, videos: x.videos || [], scores: x.scores || [], recordings: x.recordings || [] });
+    out.songs.push({ id: x.id || uid(), title: x.title || '', author: x.author || '', tempo: x.tempo || '', key: x.key || '', capo: x.capo || '', entryOrder: x.entryOrder || '', lead: x.lead || '', singer2: x.singer2 || '', solos: x.solos || '', remarks: x.remarks || '', chart: x.chart || '', duration: x.duration || '', liveSpeed: +x.liveSpeed || 1, parts: x.parts && typeof x.parts === 'object' ? x.parts : {}, videos: x.videos || [], scores: x.scores || [], recordings: x.recordings || [] });
   for (const x of Array.isArray(d.sets) ? d.sets : [])
     out.sets.push({ id: x.id || uid(), name: x.name || '', date: x.date || '', type: x.type === 'live' ? 'live' : 'repetition', musicianIds: x.musicianIds || [], songIds: x.songIds || [], remarks: x.remarks || '', posterId: x.posterId || LEGACY_POSTERS[x.posterUrl] || '', posterUrl: /^posters\/demo-[\w.-]+$/.test(x.posterUrl || '') ? x.posterUrl : '', recordings: x.recordings || [], photos: x.photos || [] });
   return out;
@@ -244,6 +244,7 @@ function vSet(id) {
     <div class="head"><div><h1>${esc(s.name)} <span class="badge ${s.type}">${TYPES[s.type]}</span></h1>
       <div class="muted">${esc(fmtDate(s.date)) || 'Date à définir'}</div></div>
       <div class="actions">
+        <button class="btn primary" data-act="live-set" data-id="${s.id}" ${songs.length ? '' : 'disabled'}>🎤 Mode scène</button>
         <button class="btn primary" data-act="set-print" data-id="${s.id}">PDF</button>
         <button class="btn" data-act="set-edit" data-id="${s.id}">Modifier</button>
         <button class="btn" data-act="set-dup" data-id="${s.id}">Dupliquer</button>
@@ -285,15 +286,17 @@ function vSong(idq) {
   const fromSet = state.sets.find(s => s.id === new URLSearchParams(query || '').get('set'));
   const inSets = state.sets.filter(s => s.songIds.includes(x.id));
   const info = [['Auteur', x.author], ['Tempo', x.tempo && x.tempo + ' bpm'], ['Tonalité', keyLabel(x)], ["Ordre d'entrée", x.entryOrder],
-    ['Chanteur lead', mName(x.lead)], ['Chanteur 2', mName(x.singer2)], ['Solos', x.solos]].filter(r => r[1]);
+    ['Chanteur lead', mName(x.lead)], ['Chanteur 2', mName(x.singer2)], ['Solos', x.solos], ['Durée', x.duration]].filter(r => r[1]);
   const parts = state.musicians.filter(m => partLabel(x, m.id));
   return `<a class="back" href="${fromSet ? '#/set/' + fromSet.id : '#/songs'}">‹ ${fromSet ? esc(fromSet.name) : 'Morceaux'}</a>
     <div class="head"><h1>${esc(x.title)}</h1><div class="actions">
+      <button class="btn primary" data-act="live-song" data-id="${x.id}" data-set="${fromSet ? fromSet.id : ''}">🎤 Mode scène</button>
       <button class="btn primary" data-act="song-edit" data-id="${x.id}">Modifier</button>
       <button class="btn danger" data-act="song-del" data-id="${x.id}">Supprimer</button></div></div>
     <div class="card">${info.length ? `<dl class="info">${info.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>` : '<span class="muted">Fiche à compléter : tempo, tonalité, chanteurs…</span>'}</div>
     <h2>Instruments</h2>
     <div class="card">${parts.length ? `<div class="tablewrap"><table><tr><th>Musicien</th><th>Instruments</th><th>Note</th></tr>${parts.map(m => `<tr ${m.id === me ? 'class="mine"' : ''}><td>${esc(m.firstName)}</td><td>${esc(instText(part(x, m.id).instruments))}</td><td class="pre">${esc(part(x, m.id).note)}</td></tr>`).join('')}</table></div>` : '<span class="muted">Aucun instrument défini — cliquez sur Modifier.</span>'}</div>
+    ${x.chart ? `<h2>Paroles et accords${x.duration ? ` <span class="muted">· ${esc(x.duration)}</span>` : ''}</h2><div class="card pre chart">${esc(x.chart)}</div>` : ''}
     ${x.remarks ? `<h2>Remarques</h2><div class="card pre">${esc(x.remarks)}</div>` : ''}
     ${attSection('Liens vidéo', 'song:' + x.id, 'videos', 'video/*')}
     ${attSection('Partitions', 'song:' + x.id, 'scores', '.pdf,image/*,.txt,.gp,.gp5,.gpx,.musicxml,.mxl')}
@@ -550,10 +553,14 @@ const A = {
         ${state.musicians.map(m => { const p = x ? part(x, m.id) : { instruments: [], note: '' }; return `<fieldset><legend>${esc(m.firstName)}${m.guest ? ' (invité)' : ''}</legend>
           <div class="checks">${[...new Set([...m.instruments, ...p.instruments])].map(i => `<label><input type="checkbox" name="inst_${m.id}" value="${esc(i)}" ${p.instruments.includes(i) ? 'checked' : ''}>${esc(withIcon(i))}</label>`).join('') || '<span class="muted">Aucun instrument déclaré</span>'}</div>
           <input name="note_${m.id}" value="${esc(p.note)}" placeholder="Note (son, effet, accordage…)"></fieldset>`; }).join('')}
+        <h2>Mode scène</h2>
+        <label class="f">Paroles et accords (une ligne d'accords au-dessus de chaque ligne de paroles ; les intitulés Couplet, Refrain… ressortent en couleur)<textarea name="chart" class="chart-input" spellcheck="false" placeholder="Couplet&#10;Am        F         C        G&#10;Paroles de la première ligne…">${esc(x?.chart || '')}</textarea></label>
+        ${field('Durée du morceau (min:s) — facultatif, cale le défilement sur la durée plutôt que sur le tempo', 'duration', x?.duration, 'placeholder="4:30" inputmode="numeric" pattern="\\d{1,2}(:\\d{2})?"')}
         ${area('Remarques', 'remarks', x?.remarks)}`,
       onSubmit(fd) {
         const t = x || normalize({ songs: [{}] }).songs[0];
-        for (const k of ['title', 'author', 'tempo', 'key', 'capo', 'entryOrder', 'lead', 'singer2', 'solos', 'remarks']) t[k] = fd.get(k).trim();
+        for (const k of ['title', 'author', 'tempo', 'key', 'capo', 'entryOrder', 'lead', 'singer2', 'solos', 'remarks', 'duration']) t[k] = fd.get(k).trim();
+        t.chart = fd.get('chart').replace(/\s+$/, '');
         if (t.capo === '0') t.capo = '';
         t.parts = {};
         for (const m of state.musicians) {
@@ -601,6 +608,14 @@ const A = {
     for (const x of state.songs) { delete x.parts[m.id]; if (x.lead === m.id) x.lead = ''; if (x.singer2 === m.id) x.singer2 = ''; }
     if (me === m.id) { me = ''; localStorage.removeItem('dow:me'); }
     save(); render();
+  },
+
+  // Mode scène
+  'live-set'(el) { const s = state.sets.find(x => x.id === el.dataset.id); Live.open(s.songIds, 0, s.name); },
+  'live-song'(el) {
+    const s = state.sets.find(x => x.id === el.dataset.set);
+    if (s && s.songIds.includes(el.dataset.id)) Live.open(s.songIds, s.songIds.indexOf(el.dataset.id), s.name);
+    else Live.open([el.dataset.id]);
   },
 
   // Plans de scène depuis la page d'un set
@@ -870,9 +885,9 @@ const links = l => (l || []).filter(a => a.url).map(a => a.url).join(' | ');
 const CSV = {
   songs: {
     file: 'morceaux',
-    head: () => ['id', 'Titre', 'Auteur', 'Tempo', 'Tonalité', 'Capo', "Ordre d'entrée", 'Chanteur lead', 'Chanteur 2', 'Solos', 'Remarques', 'Liens vidéo', 'Partitions (liens)', 'Enregistrements (liens)',
+    head: () => ['id', 'Titre', 'Auteur', 'Tempo', 'Tonalité', 'Capo', "Ordre d'entrée", 'Chanteur lead', 'Chanteur 2', 'Solos', 'Remarques', 'Paroles et accords', 'Durée', 'Liens vidéo', 'Partitions (liens)', 'Enregistrements (liens)',
       ...state.musicians.flatMap(m => ['Instruments ' + m.firstName, 'Note ' + m.firstName])],
-    rows: () => state.songs.map(x => [x.id, x.title, x.author, x.tempo, x.key, x.capo, x.entryOrder, mName(x.lead), mName(x.singer2), x.solos, x.remarks, links(x.videos), links(x.scores), links(x.recordings),
+    rows: () => state.songs.map(x => [x.id, x.title, x.author, x.tempo, x.key, x.capo, x.entryOrder, mName(x.lead), mName(x.singer2), x.solos, x.remarks, x.chart, x.duration, links(x.videos), links(x.scores), links(x.recordings),
       ...state.musicians.flatMap(m => [part(x, m.id).instruments.join(', '), part(x, m.id).note])]),
   },
   musicians: {
@@ -933,7 +948,7 @@ function importCsv(text) {
       if (!r.Titre) continue;
       const t = upsert(state.songs, r, 'Titre', 'title');
       const set = (k, col) => { if (has(col)) t[k] = r[col]; };
-      set('title', 'Titre'); set('author', 'Auteur'); set('tempo', 'Tempo'); set('key', 'Tonalité'); set('capo', 'Capo'); set('entryOrder', "Ordre d'entrée"); set('solos', 'Solos'); set('remarks', 'Remarques');
+      set('title', 'Titre'); set('author', 'Auteur'); set('tempo', 'Tempo'); set('key', 'Tonalité'); set('capo', 'Capo'); set('entryOrder', "Ordre d'entrée"); set('solos', 'Solos'); set('remarks', 'Remarques'); set('chart', 'Paroles et accords'); set('duration', 'Durée');
       if (has('Chanteur lead')) t.lead = byName(r['Chanteur lead']);
       if (has('Chanteur 2')) t.singer2 = byName(r['Chanteur 2']);
       Object.assign(t, normalize({ songs: [t] }).songs[0]);

@@ -229,3 +229,41 @@ body.tl-full #demo-banner { display: none; }
 .tl-lv i { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .tl-lv b { display: block; height: 100%; width: 0; background: #22c55e; transition: width .08s linear; }
 .tl-diag { text-align: center; font-size: .72rem; min-height: 1em; font-variant-numeric: tabular-nums; }
+
+/* ---- Paroles et accords (fiche du morceau) ---- */
+.chart, .chart-input { font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace; font-size: .92rem; line-height: 1.45; }
+.chart-input { min-height: 12rem; white-space: pre; overflow-x: auto; }
+.chart { overflow-x: auto; white-space: pre; }
+
+/* ---- Mode scène (Live View) ---- */
+html.lv-open, html.lv-open body { overflow: hidden; }
+#lv { position: fixed; inset: 0; z-index: 50; background: #000; color: #f3f3f3; display: flex; flex-direction: column;
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0); }
+.lv-top, .lv-bar { display: flex; align-items: center; gap: .5rem; padding: .5rem .8rem; background: rgba(18, 16, 24, .92); transition: opacity .25s, transform .25s; }
+.lv-top { border-bottom: 1px solid #222; }
+.lv-bar { border-top: 1px solid #222; flex-wrap: wrap; justify-content: center; }
+#lv.lv-hide .lv-bar { opacity: 0; pointer-events: none; transform: translateY(100%); }
+#lv.lv-hide .lv-top { opacity: .35; }
+.lv-ttl { flex: 1; min-width: 0; }
+.lv-ttl b { display: block; font-size: 1.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lv-ttl span { font-size: .85rem; color: #a9a3b8; }
+.lv-mine { color: #c4b2ff; }
+.lv-pos { font-size: .9rem; color: #a9a3b8; font-variant-numeric: tabular-nums; }
+.lv-beat { width: 16px; height: 16px; border-radius: 50%; background: #f5b531; opacity: .18; flex: none; }
+.lv-beat.acc { background: #ff5d8f; }
+.lv-beat.lead { box-shadow: 0 0 0 4px rgba(245, 181, 49, .35); }
+.lv-b { font: inherit; font-weight: 700; color: #f3f3f3; background: #1c1a24; border: 1px solid #34303f; border-radius: 10px; min-width: 48px; min-height: 48px; padding: .3rem .8rem; cursor: pointer; }
+.lv-b.on, .lv-play { background: #f5b531; border-color: #f5b531; color: #111; }
+.lv-play { min-width: 64px; font-size: 1.3rem; }
+.lv-grp { display: inline-flex; align-items: center; gap: .3rem; color: #a9a3b8; font-size: .85rem; font-variant-numeric: tabular-nums; }
+.lv-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 1.2rem 1rem 0; }
+.lv-text { max-width: 60em; margin: 0 auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace; line-height: 1.45; }
+.lv-l { white-space: pre; }   /* pas de retour à la ligne : les accords restent au-dessus des bonnes syllabes */
+.lv-ch { color: #f5b531; font-weight: 700; }
+.lv-sec { color: #b79bff; font-weight: 800; margin-top: .4em; text-transform: uppercase; letter-spacing: .04em; font-size: .8em; }
+.lv-empty { height: .7em; }
+.lv-note { color: #a9a3b8; font-family: system-ui, sans-serif; font-size: max(.6em, 15px); margin: .5em 0 1em; white-space: normal; }
+.lv-end { min-height: 55vh; display: flex; align-items: flex-start; justify-content: center; padding-top: 2rem; }
+.lv-nextsong { font-size: 1.1rem; padding: .7rem 1.2rem; }
+.lv-help { position: absolute; left: 50%; bottom: 5.5rem; transform: translateX(-50%); width: min(92vw, 520px); background: #1c1a24; border: 1px solid #34303f; border-radius: 12px; padding: .9rem 1rem; font-size: .9rem; color: #d6d2e0; }
+.lv-help p { margin: .5rem 0 0; }

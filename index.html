@@ -65,6 +65,64 @@
     </div>
   </section>
 
+  <section id="tarifs" class="pricing">
+    <div class="wrap">
+      <h2>Tarifs</h2>
+      <p class="lead">Un seul abonnement pour tout le groupe : une personne paie, tous les musiciens en profitent.</p>
+      <div class="billing" role="group" aria-label="Période de facturation">
+        <button type="button" class="on" data-bill="m">Mensuel</button><button type="button" data-bill="y">Annuel <small>2 mois offerts</small></button>
+      </div>
+      <div class="plans">
+        <article class="plan">
+          <h3>Découverte</h3>
+          <p class="plan-for">Groupes débutants ou en phase de test</p>
+          <p class="price"><b>0 €</b><span>/ mois</span></p>
+          <p class="price-alt">Gratuit</p>
+          <ul>
+            <li>Jusqu'à 4 membres</li>
+            <li>15 morceaux dans le répertoire</li>
+            <li>250 Mo de stockage pour les maquettes</li>
+            <li>Calendrier partagé et sondages de répétition <span class="soon">Bientôt</span></li>
+            <li>Setlists de base (sans export PDF avancé)</li>
+          </ul>
+          <a class="btn" href="app/#/create">Commencer gratuitement</a>
+        </article>
+        <article class="plan plan-best">
+          <span class="plan-tag">Recommandé</span>
+          <h3>Groupe</h3>
+          <p class="plan-for">Groupes actifs en répétition et en concert</p>
+          <p class="price"><b data-m="7,90 €" data-y="79 €">7,90 €</b><span data-m="/ mois" data-y="/ an">/ mois</span></p>
+          <p class="price-alt" data-m="ou 79 € / an, soit 2 mois offerts" data-y="soit 6,58 € / mois">ou 79 € / an, soit 2 mois offerts</p>
+          <ul>
+            <li>Jusqu'à 8 membres, plus les remplaçants</li>
+            <li>Morceaux et setlists illimités</li>
+            <li>10 Go de stockage audio (maquettes, répétitions)</li>
+            <li>Mode scène hors ligne et défilement automatique</li>
+            <li>Plans de scène et fiches techniques PDF</li>
+            <li>Caisse commune et partage des cachets <span class="soon">Bientôt</span></li>
+          </ul>
+          <span class="btn primary disabled" aria-disabled="true">Bientôt disponible</span>
+        </article>
+        <article class="plan">
+          <h3>Tournée</h3>
+          <p class="plan-for">Groupes pros, tribute bands et agences</p>
+          <p class="price"><b data-m="14,90 €" data-y="149 €">14,90 €</b><span data-m="/ mois" data-y="/ an">/ mois</span></p>
+          <p class="price-alt" data-m="ou 149 € / an, soit 2 mois offerts" data-y="soit 12,42 € / mois">ou 149 € / an, soit 2 mois offerts</p>
+          <ul>
+            <li>Tout le plan Groupe, plus :</li>
+            <li>Membres illimités : techniciens, ingé son, manager</li>
+            <li>50 Go de stockage audio</li>
+            <li>Synchronisation live : le leader fait défiler les tablettes de tout le groupe <span class="soon">Bientôt</span></li>
+            <li>Pilote MIDI et backing tracks synchronisés <span class="soon">Bientôt</span></li>
+            <li>Contrats et factures de prestation générés automatiquement <span class="soon">Bientôt</span></li>
+          </ul>
+          <span class="btn disabled" aria-disabled="true">Bientôt disponible</span>
+        </article>
+      </div>
+      <p class="pricing-note">Les fonctions marquées « Bientôt » sont en préparation.</p>
+    </div>
+  </section>
+
   <section class="band">
     <div class="wrap">
       <h2>Vos données restent les vôtres</h2>
@@ -78,12 +136,22 @@
   </section>
 </main>
 
-<footer><div class="wrap">JamHit — application web pour groupes de musique. <a href="tutoriel.html">Tutoriel</a> · <a href="app/">Application</a></div></footer>
+<footer><div class="wrap">JamHit — application web pour groupes de musique. <a href="#tarifs">Tarifs</a> · <a href="tutoriel.html">Tutoriel</a> · <a href="app/">Application</a></div></footer>
 <script>
 // L'application a déménagé dans app/ : on retire l'ancien mode hors ligne qui couvrait tout le site.
 if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) {
   rs.forEach(function (r) { if (new URL(r.scope).pathname === new URL('./', location.href).pathname) r.unregister(); });
 }).catch(function () {});
+</script>
+<script>
+// Tarifs : bascule mensuel / annuel
+document.querySelectorAll('[data-bill]').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var y = b.dataset.bill === 'y';
+    document.querySelectorAll('[data-bill]').forEach(function (x) { x.classList.toggle('on', x === b); });
+    document.querySelectorAll('.pricing [data-m]').forEach(function (e) { e.textContent = y ? e.dataset.y : e.dataset.m; });
+  });
+});
 </script>
 </body>
 </html>
